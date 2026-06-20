@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+node_modules/
+.next/
+npm-debug.log*
+.vscode/
+.idea/
+.env
+.env.local
+.DS_Store
+Thumbs.db
+/tmp/
+/downloads/
+pgdata/
