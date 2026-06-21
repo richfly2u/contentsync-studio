@@ -1,32 +1,26 @@
-import { createMiddlewareClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+export function middleware(req: NextRequest) {
+  const hasSession = req.cookies.has("sb-session");
 
   const protectedPaths = ["/dashboard", "/videos", "/publish", "/settings"];
   const isProtected = protectedPaths.some((path) =>
     req.nextUrl.pathname.startsWith(path)
   );
 
-  if (isProtected && !session) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  if (isProtected && !hasSession) {
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("redirect", req.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  if (
-    (req.nextUrl.pathname === "/login" ||
-      req.nextUrl.pathname === "/register") &&
-    session
-  ) {
+  const authPaths = ["/login", "/register"];
+  if (authPaths.includes(req.nextUrl.pathname) && hasSession) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  return res;
+  return NextResponse.next();
 }
 
 export const config = {
@@ -34,6 +28,7 @@ export const config = {
     "/dashboard/:path*",
     "/videos/:path*",
     "/publish/:path*",
+    "/settings/:path*",
     "/login",
     "/register",
   ],

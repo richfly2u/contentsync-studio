@@ -18,6 +18,8 @@ class VideoService:
             return await self._download_tiktok(url)
         elif "xhs" in source.lower() or "xiaohongshu" in source.lower():
             return await self._download_xiaohongshu(url)
+        elif "facebook" in source.lower():
+            return await self._download_facebook(url)
         else:
             raise ValueError(f"Unsupported source: {source}")
 
@@ -46,6 +48,36 @@ class VideoService:
                             "ext": ext.lstrip("."),
                         }
                 raise FileNotFoundError(f"Xiaohongshu download failed for {task_id}")
+
+        loop = asyncio.get_event_loop()
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            return await loop.run_in_executor(pool, run)
+
+    async def _download_facebook(self, url: str) -> dict:
+        """Download video from Facebook using yt-dlp."""
+        task_id = str(uuid.uuid4())
+        opts = {
+            "format": "best",
+            "outtmpl": str(DOWNLOAD_DIR / f"{task_id}.%(ext)s"),
+            "quiet": True,
+            "no_warnings": True,
+        }
+
+        def run():
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                for ext in [".mp4", ".webm"]:
+                    p = str(DOWNLOAD_DIR / f"{task_id}{ext}")
+                    if os.path.exists(p):
+                        return {
+                            "task_id": task_id,
+                            "file_path": p,
+                            "title": info.get("title", "未知 Facebook 影片"),
+                            "duration": info.get("duration"),
+                            "thumbnail": info.get("thumbnail"),
+                            "ext": ext.lstrip("."),
+                        }
+                raise FileNotFoundError(f"Facebook download failed for {task_id}")
 
         loop = asyncio.get_event_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:

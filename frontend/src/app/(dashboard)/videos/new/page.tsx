@@ -69,6 +69,7 @@ export default function NewVideoPage() {
                 { value: "youtube_download", label: "YouTube" },
                 { value: "tiktok_download", label: "TikTok" },
                 { value: "xhs_download", label: "小紅書" },
+                { value: "facebook_download", label: "Facebook" },
               ].map((opt) => (
                 <button
                   key={opt.value}

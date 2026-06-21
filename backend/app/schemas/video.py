@@ -9,6 +9,7 @@ class VideoSource(str, Enum):
     youtube_download = "youtube_download"
     tiktok_download = "tiktok_download"
     xhs_download = "xhs_download"
+    facebook_download = "facebook_download"
     upload = "upload"
 
 

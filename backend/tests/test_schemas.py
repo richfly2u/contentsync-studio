@@ -110,6 +110,7 @@ def test_video_enum_values():
     assert VideoSource.youtube_download.value == "youtube_download"
     assert VideoSource.tiktok_download.value == "tiktok_download"
     assert VideoSource.xhs_download.value == "xhs_download"
+    assert VideoSource.facebook_download.value == "facebook_download"
     assert VideoSource.upload.value == "upload"
     print("  ✅ VideoSource enum OK")
 
