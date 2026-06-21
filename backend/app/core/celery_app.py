@@ -5,7 +5,7 @@ celery_app = Celery(
     "contentsync",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.tasks.video_tasks", "app.tasks.ai_tasks"],
+    include=["app.tasks.video_tasks", "app.tasks.ai_tasks", "app.tasks.scheduler"],
 )
 
 celery_app.conf.update(

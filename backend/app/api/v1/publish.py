@@ -12,6 +12,7 @@ from app.schemas.publish import (
 )
 from app.core.security import get_current_user
 from app.services.platform_service import PlatformService
+from datetime import datetime, timezone
 import uuid
 
 router = APIRouter()
@@ -50,7 +51,18 @@ async def publish_video(
         await db.flush()
         await db.refresh(pub)
 
-        # Execute publish
+        # If scheduled in the future, don't publish now
+        if data.scheduled_at and data.scheduled_at > datetime.now(timezone.utc):
+            pub.status = PublishStatus.scheduled
+            results.append({
+                "platform": platform,
+                "status": "scheduled",
+                "url": "",
+                "scheduled_at": data.scheduled_at.isoformat(),
+            })
+            continue
+
+        # Execute publish immediately
         try:
             if platform == "youtube":
                 result = await service.publish_to_youtube(

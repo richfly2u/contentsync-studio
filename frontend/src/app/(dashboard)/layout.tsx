@@ -4,6 +4,7 @@ const navItems = [
   { href: "/dashboard", label: "儀表板", icon: "📊" },
   { href: "/dashboard/videos", label: "影片庫", icon: "🎬" },
   { href: "/dashboard/videos/new", label: "新增影片", icon: "➕" },
+  { href: "/dashboard/schedules", label: "排程日曆", icon: "📅" },
   { href: "/dashboard/publish", label: "發布管理", icon: "📤" },
   { href: "/settings", label: "設定", icon: "⚙️" },
 ];

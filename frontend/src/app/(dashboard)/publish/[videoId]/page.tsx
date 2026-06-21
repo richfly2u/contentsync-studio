@@ -16,6 +16,9 @@ export default function PublishVideoPage() {
   const [publishing, setPublishing] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [scheduleMode, setScheduleMode] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("09:00");
 
   const platforms = [
     { id: "youtube", name: "YouTube", icon: "▶️" },
@@ -87,6 +90,9 @@ export default function PublishVideoPage() {
           video_id: params.videoId,
           platforms: selectedPlatforms,
           caption_text: caption,
+          scheduled_at: scheduleMode && scheduleDate
+            ? new Date(`${scheduleDate}T${scheduleTime}:00`).toISOString()
+            : null,
         }),
       });
 
@@ -179,6 +185,47 @@ export default function PublishVideoPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Schedule Toggle */}
+          <div className="bg-white rounded-xl border p-6 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold">⏰ 排程發布</h2>
+              <button
+                onClick={() => setScheduleMode(!scheduleMode)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                  scheduleMode
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                {scheduleMode ? "關閉排程" : "設定排程"}
+              </button>
+            </div>
+            {scheduleMode && (
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <label className="text-xs text-gray-500 block mb-1">日期</label>
+                  <input
+                    type="date"
+                    value={scheduleDate}
+                    onChange={(e) => setScheduleDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required={scheduleMode}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-gray-500 block mb-1">時間</label>
+                  <input
+                    type="time"
+                    value={scheduleTime}
+                    onChange={(e) => setScheduleTime(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-xl border p-6 shadow-sm space-y-3">
