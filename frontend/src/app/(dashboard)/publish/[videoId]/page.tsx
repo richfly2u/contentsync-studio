@@ -20,6 +20,7 @@ export default function PublishVideoPage() {
   const platforms = [
     { id: "youtube", name: "YouTube", icon: "▶️" },
     { id: "tiktok", name: "TikTok", icon: "🎵" },
+    { id: "xiaohongshu", name: "小紅書", icon: "📕" },
     { id: "facebook", name: "Facebook", icon: "👍" },
   ];
 

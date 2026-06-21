@@ -71,6 +71,13 @@ async def publish_video(
                     video_path=video.storage_url or "",
                     description=data.caption_text or "",
                 )
+            elif platform == "xiaohongshu":
+                result = await service.publish_to_xiaohongshu(
+                    cookies="placeholder",
+                    video_path=video.storage_url or "",
+                    title=video.original_filename,
+                    description=data.caption_text or "",
+                )
             else:
                 raise ValueError(f"Unsupported platform: {platform}")
 

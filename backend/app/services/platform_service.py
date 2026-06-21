@@ -53,16 +53,32 @@ class PlatformService:
         description: str = "",
     ) -> dict:
         """Publish to Xiaohongshu/Rednote.
-        
-        No official API available. Requires Playwright automation.
-        Phase 2 feature.
+
+        No official API available. Returns a publishing guide for manual
+        upload. Playwright automation reserved for future upgrade.
         """
-        print(f"[XIAOHONGSHU] Placeholder - Phase 2")
+        guide = (
+            f"📱 **小紅書發布指引**\n\n"
+            f"**影片標題：** {title}\n"
+            f"**影片位置：** {video_path}\n"
+            f"**文案：** {description[:200]}{'...' if len(description) > 200 else ''}\n\n"
+            f"**手動發布步驟：**\n"
+            f"1. 打開小紅書 App 或 Creator Platform\n"
+            f"2. 點「+」發布新內容\n"
+            f"3. 從以下位置選取影片：{video_path}\n"
+            f"4. 貼上以上文案\n"
+            f"5. 點「發布」\n\n"
+            f"⏳ 未來升級：Playwright 自動發布（需登入 cookie）"
+        )
+
+        print(f"[XIAOHONGSHU] Publishing guide for: {title}")
+        print(guide)
+
         return {
             "platform_post_id": "",
             "platform_url": "",
-            "status": "failed",
-            "error": "Xiaohongshu publishing is Phase 2",
+            "status": "guide_generated",
+            "guide": guide,
         }
 
     @staticmethod
