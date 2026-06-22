@@ -28,20 +28,22 @@ export default function PublishVideoPage() {
   ];
 
   useEffect(() => {
+    const videoId = params?.videoId;
+    if (!videoId) return;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         router.push("/login");
         return;
       }
-      fetchData(session.access_token);
+      fetchData(session.access_token, videoId);
     });
-  }, [params.videoId]);
+  }, [params?.videoId]);
 
-  const fetchData = async (token: string) => {
+  const fetchData = async (token: string, videoId: string) => {
     try {
       // Fetch video
       const vRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/videos/${params.videoId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/videos/${videoId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!vRes.ok) throw new Error("Video not found");
@@ -50,7 +52,7 @@ export default function PublishVideoPage() {
 
       // Fetch transcript for caption
       const tRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${params.videoId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (tRes.ok) {
@@ -72,6 +74,8 @@ export default function PublishVideoPage() {
   };
 
   const handlePublish = async () => {
+    const videoId = params?.videoId;
+    if (!videoId) return;
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     if (!token || selectedPlatforms.length === 0) return;
@@ -87,7 +91,7 @@ export default function PublishVideoPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          video_id: params.videoId,
+          video_id: videoId,
           platforms: selectedPlatforms,
           caption_text: caption,
           scheduled_at: scheduleMode && scheduleDate

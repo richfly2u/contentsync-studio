@@ -35,20 +35,22 @@ export default function VideoDetailPage() {
   const [activeTab, setActiveTab] = useState("info");
 
   useEffect(() => {
+    const videoId = params?.id;
+    if (!videoId) return;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         router.push("/login");
         return;
       }
-      fetchData(session.access_token);
+      fetchData(session.access_token, videoId);
     });
-  }, [params.id]);
+  }, [params?.id]);
 
-  const fetchData = async (token: string) => {
+  const fetchData = async (token: string, videoId: string) => {
     try {
       // Fetch video
       const vRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/videos/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/videos/${videoId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!vRes.ok) throw new Error("Not found");
@@ -57,7 +59,7 @@ export default function VideoDetailPage() {
 
       // Try fetching transcript
       const tRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (tRes.ok) {
@@ -72,6 +74,8 @@ export default function VideoDetailPage() {
   };
 
   const handleTranscribe = async () => {
+    const videoId = params?.id;
+    if (!videoId) return;
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     if (!token) return;
@@ -79,7 +83,7 @@ export default function VideoDetailPage() {
     setProcessing(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcribe/${params.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcribe/${videoId}`,
         { method: "POST", headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) throw new Error("Failed to start transcription");
@@ -87,7 +91,7 @@ export default function VideoDetailPage() {
       // Poll for completion
       const poll = setInterval(async () => {
         const tRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${params.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (tRes.ok) {
