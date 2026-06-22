@@ -20,7 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-TW" suppressHydrationWarning>
-      <body className="min-h-screen">{children}</body>
+      <body style={{background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh'}}>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
