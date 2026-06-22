@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useCallback, useRef, useEffect } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "./theme-context";
 
@@ -110,6 +111,8 @@ export default function HomePage() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [user, setUser] = useState<any>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<any>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -158,9 +161,18 @@ export default function HomePage() {
           ? { image_url: targetUrl.trim(), language: "chi_sim+eng" }
           : { url: targetUrl.trim(), language: "zh" };
 
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      // Add Turnstile token for unauthenticated users
+      if (!user && turnstileToken) {
+        headers["x-turnstile-token"] = turnstileToken;
+      }
+
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(body),
       });
 
@@ -203,7 +215,7 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [url, mode, user, remaining, isDownloadMode]);
+  }, [url, mode, user, remaining, isDownloadMode, turnstileToken]);
 
   const handlePaste = async () => {
     try {
@@ -372,6 +384,22 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+
+            {/* Turnstile verification for non-logged-in users */}
+            {!user && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+              <div className="flex justify-center mt-3" style={{minHeight: '0px'}}>
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+                  onSuccess={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken(null)}
+                  onError={() => setTurnstileToken(null)}
+                  options={{
+                    theme: 'auto',
+                  }}
+                />
+              </div>
+            )}
 
             {/* Error */}
             {error && (
