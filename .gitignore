@@ -15,3 +15,4 @@ Thumbs.db
 /tmp/
 /downloads/
 pgdata/
+.vercel
