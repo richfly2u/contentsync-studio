@@ -277,27 +277,42 @@ export default function HomePage() {
             <div className="glass-card p-4 md:p-5">
               {/* Mode Tabs */}
               <div className="flex gap-1.5 mb-4 flex-wrap">
-                {MODES.map((m) => (
+                {MODES.map((m, idx) => {
+                  const colors = [
+                    { border: 'rgba(52,211,153,0.4)', glow: 'rgba(52,211,153,0.08)', active: 'from-emerald-500 to-green-500' },
+                    { border: 'rgba(96,165,250,0.4)', glow: 'rgba(96,165,250,0.08)', active: 'from-blue-500 to-indigo-500' },
+                    { border: 'rgba(251,191,36,0.4)', glow: 'rgba(251,191,36,0.08)', active: 'from-amber-400 to-orange-500' },
+                    { border: 'rgba(168,85,247,0.4)', glow: 'rgba(168,85,247,0.08)', active: 'from-purple-500 to-violet-600' },
+                  ];
+                  const c = colors[idx];
+                  const isActive = mode === m.id;
+                  return (
                   <button
                     key={m.id}
                     onClick={() => { setMode(m.id as ToolMode); setResult(null); setError(""); }}
                     className={`px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 ${
-                      mode === m.id
-                        ? "glass-card text-white border-0"
-                        : "text-gray-600 dark:text-gray-400"
-                    } ${mode === m.id ? "bg-gradient-to-br from-[#6c5ce7] to-[#a855f7] dark:from-[#6c5ce7] dark:to-[#a855f7]" : ""}`}
-                    style={mode !== m.id ? {
+                      isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                    style={isActive ? {
+                      background: idx === 0 ? 'linear-gradient(135deg, #059669, #10b981)' :
+                                   idx === 1 ? 'linear-gradient(135deg, #3b82f6, #6366f1)' :
+                                   idx === 2 ? 'linear-gradient(135deg, #d97706, #f59e0b)' :
+                                               'linear-gradient(135deg, #7c3aed, #9333ea)',
+                      border: '1.5px solid transparent',
+                      boxShadow: `0 0 20px ${c.glow}, 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)`
+                    } : {
                       background: 'var(--surface)',
                       backdropFilter: 'blur(8px)',
                       WebkitBackdropFilter: 'blur(8px)',
-                      border: '1.5px solid var(--line)',
-                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)'
-                    } : {}}
+                      border: `1.5px solid ${c.border}`,
+                      boxShadow: `0 0 16px ${c.glow}, 0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)`
+                    }}
                   >
                     <span className="mr-1">{m.icon}</span>{m.label}
                     {m.desc && <span className="block text-[10px] opacity-70 mt-0.5">{m.desc}</span>}
                   </button>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Input Row */}
