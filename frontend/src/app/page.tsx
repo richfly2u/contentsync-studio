@@ -266,8 +266,8 @@ export default function HomePage() {
             {/* Hero Text */}
             <div className="text-center mb-6">
               <div className="text-[11px] uppercase tracking-wider mb-1" style={{color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.13em'}}>免費線上工具</div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{color: 'var(--text)'}}>
-                貼上連結，<span style={{color: 'var(--accent)'}}>提取影片</span>、<span style={{color: 'var(--accent)'}}>文案與圖片</span>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold whitespace-nowrap" style={{color: 'var(--text)'}}>
+                貼上連結，提取影片、文案與圖片
               </h1>
               <p className="text-sm" style={{color: 'var(--muted)'}}>支援小紅書、抖音、TikTok、YouTube、Facebook 等 50+ 平台，免費使用無需註冊</p>
             </div>
