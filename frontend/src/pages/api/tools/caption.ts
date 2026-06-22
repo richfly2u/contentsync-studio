@@ -15,12 +15,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const isYouTube = url.includes("youtube.com") || url.includes("youtu.be");
 
     if (isXiaohongshu) {
-      const parseRes = await fetch("https://xhs-html-downloader.vercel.app/api/parse", {
+      const data = await fetchWithTimeout(`https://xhs-html-downloader.vercel.app/api/parse`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
-      const data = await parseRes.json();
       if (!data.success) {
         return res.json({ success: false, error: "小紅書解析失敗" });
       }
@@ -57,11 +56,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const transText = transRes ? await transRes.text() : "";
         let title = "YouTube 影片";
-        let duration = null;
+        let duration: number | null = null;
         if (infoRes && infoRes.ok) {
           const info = await infoRes.json();
           title = info?.videoDetails?.title || title;
-          duration = parseInt(info?.videoDetails?.lengthSeconds || "0") || null;
+          const secs = parseInt(info?.videoDetails?.lengthSeconds || "0", 10);
+          duration = secs || null;
         }
 
         return res.json({
@@ -84,12 +84,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 其他平台
     try {
-      const parseRes = await fetch("https://xhs-html-downloader.vercel.app/api/parse", {
+      const data = await fetchWithTimeout(`https://xhs-html-downloader.vercel.app/api/parse`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
-      const data = await parseRes.json();
       if (data.success) {
         return res.json({
           success: true,
@@ -106,7 +105,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       error: "暫不支援此平台。目前支援：小紅書、YouTube",
     });
   } catch (e: any) {
-    return res.status(500).json({ success: false, error: e.message || "未知錯誤" });
+    return res.status(500).json({
+      success: false,
+      error: e?.message || "Internal server error",
+      type: e?.constructor?.name || typeof e,
+    });
   }
 }
 
@@ -120,4 +123,15 @@ function extractYouTubeId(url: string): string | null {
     if (m) return m[1];
   }
   return null;
+}
+
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 8000): Promise<any> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
