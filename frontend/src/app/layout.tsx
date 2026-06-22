@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-TW" suppressHydrationWarning>
-      <body style={{background: 'var(--bg)', color: 'var(--text)', minHeight: '100vh'}}>
+      <body>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

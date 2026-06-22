@@ -33,7 +33,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
     const root = document.documentElement;
+    const body = document.body;
+
+    // Toggle Tailwind dark class on html
     root.classList.toggle("dark", theme === "dark");
+
+    // Directly set body style for background
+    if (theme === "dark") {
+      body.style.background =
+        "linear-gradient(160deg, #0a0a1a 0%, #12102a 20%, #1a0a30 40%, #162040 60%, #0f1a3a 80%, #0a0a1a 100%)";
+      body.style.color = "#e8e8ed";
+    } else {
+      body.style.background = "#faf8f7";
+      body.style.color = "#252124";
+    }
+
     localStorage.setItem("cs_theme", theme);
   }, [theme, mounted]);
 

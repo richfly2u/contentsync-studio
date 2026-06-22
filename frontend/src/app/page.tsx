@@ -260,9 +260,6 @@ export default function HomePage() {
       </header>
 
       <main className="flex-1">
-        {/* Ambient lights (same as xhs tool) */}
-        <div className="ambient ambient-one" />
-        <div className="ambient ambient-two" />
 
         {/* ═══ Hero + Tool Panel ═══ */}
         <section className="py-8 md:py-12" style={{background: 'transparent'}}>

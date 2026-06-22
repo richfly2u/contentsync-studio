@@ -2,46 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Light mode (from xhs tool) ─── */
+/* ─── CSS variables for glass card ─── */
 :root {
-  --bg: #faf8f7;
   --surface: rgba(255, 255, 255, .88);
-  --surface-solid: #fff;
-  --text: #252124;
-  --muted: #776f73;
   --line: rgba(63, 49, 56, .11);
-  --accent: #f64f63;
   --shadow: 0 26px 80px rgba(72, 45, 53, .11);
 }
-
-/* ─── Dark mode (from daily-dashboard) ─── */
 .dark {
-  --bg: #0a0a1a;
   --surface: rgba(255, 255, 255, 0.08);
-  --surface-solid: #1a1a2e;
-  --text: #e8e8ed;
-  --muted: #888;
   --line: rgba(168, 85, 247, 0.3);
-  --accent: #a855f7;
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  transition: background .3s, color .3s;
+  transition: background .4s ease, color .4s ease;
 }
 
-/* ─── Dark: gradient background like daily-dashboard ─── */
-.dark body {
-  background: linear-gradient(160deg, #0a0a1a 0%, #12102a 20%, #1a0a30 40%, #162040 60%, #0f1a3a 80%, #0a0a1a 100%);
+/* ─── Glass card (same as daily-dashboard) ─── */
+.glass-card {
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.25);
 }
 
-/* ─── Dark: ambient light blobs (daily-dashboard style) ─── */
+/* ─── Ambient lights (dark mode only) ─── */
 .dark body::before {
   content: '';
   position: fixed;
@@ -63,21 +54,6 @@ body {
   background: radial-gradient(ellipse at center, rgba(96,165,250,0.06) 0%, rgba(147,197,253,0.03) 30%, transparent 70%);
   pointer-events: none;
   z-index: 0;
-}
-
-/* ─── Glass card (daily-dashboard style for dark, xhs style for light) ─── */
-.glass-card {
-  background: var(--surface);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid var(--line);
-  border-radius: 16px;
-  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.25);
-}
-.light .glass-card {
-  background: rgba(255, 255, 255, .88);
-  border: 1px solid rgba(63, 49, 56, .11);
-  box-shadow: 0 26px 80px rgba(72, 45, 53, .11), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
 /* ─── Animations ─── */
