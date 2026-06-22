@@ -264,13 +264,13 @@ export default function HomePage() {
         <section className="py-8 md:py-12" style={{background: 'transparent'}}>
           <div className="max-w-4xl mx-auto px-4">
             {/* Hero Text */}
-            <div className="text-center mb-6">
-              <div className="flex items-center justify-center gap-3 flex-wrap">
+            <div className="text-center mb-4">
+              <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
                 <span className="text-[10px] sm:text-[11px] uppercase tracking-wider shrink-0" style={{color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.13em'}}>免費線上工具</span>
-                <h1 className="text-base sm:text-lg md:text-xl font-bold whitespace-nowrap" style={{color: 'var(--text)'}}>
+                <h1 className="text-sm sm:text-lg md:text-xl font-bold whitespace-nowrap" style={{color: 'var(--text)'}}>
                   貼上連結，提取影片、文案與圖片
                 </h1>
-                <span className="text-[10px] sm:text-xs" style={{color: 'var(--muted)'}}>支援 50+ 平台，免登入</span>
+                <span className="text-[10px] sm:text-xs" style={{color: 'var(--muted)'}}>50+ 平台免登入</span>
               </div>
             </div>
 
