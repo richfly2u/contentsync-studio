@@ -261,8 +261,14 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* ═══ Hero + Tool Panel ═══ */}
-        <section className="py-8 md:py-12 bg-gradient-to-b from-blue-50 to-white dark:from-[#0a0a1a] dark:via-[#0f0b2e] dark:to-[#0a0a1a]">
-          <div className="max-w-4xl mx-auto px-4">
+        <section className="relative overflow-hidden py-8 md:py-12 bg-gradient-to-b from-blue-50 to-white dark:from-[#0a0a1a] dark:via-[#0f0b2e] dark:to-[#0a0a1a]">
+          {/* Decorative blobs (visible behind glass panels) */}
+          <div className="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
+            <div className="absolute top-10 left-[10%] w-64 h-64 bg-blue-300/30 dark:bg-blue-600/15 rounded-full blur-3xl" />
+            <div className="absolute top-20 right-[15%] w-72 h-72 bg-purple-300/25 dark:bg-purple-600/15 rounded-full blur-3xl" />
+            <div className="absolute bottom-10 left-[40%] w-80 h-80 bg-teal-200/20 dark:bg-teal-500/10 rounded-full blur-3xl" />
+          </div>
+          <div className="max-w-4xl mx-auto px-4 relative">
             {/* Hero Text */}
             <div className="text-center mb-6">
               <div className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">免費線上工具</div>
