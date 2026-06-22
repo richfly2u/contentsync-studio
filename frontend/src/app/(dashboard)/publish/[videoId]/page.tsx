@@ -8,6 +8,7 @@ import Link from "next/link";
 export default function PublishVideoPage() {
   const params = useParams();
   const router = useRouter();
+  const getVideoId = () => { const r = params?.videoId; return r ? (Array.isArray(r) ? r[0] : r) : ""; };
   const [video, setVideo] = useState<any>(null);
   const [transcript, setTranscript] = useState<any>(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
@@ -132,7 +133,7 @@ export default function PublishVideoPage() {
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
       <div>
-        <Link href={`/dashboard/videos/${params.videoId}`} className="text-sm text-blue-600 hover:underline">
+        <Link href={`/dashboard/videos/${getVideoId()}`} className="text-sm text-blue-600 hover:underline">
           ← 回影片詳情
         </Link>
       </div>
@@ -158,7 +159,7 @@ export default function PublishVideoPage() {
             </div>
           ))}
           <Link
-            href={`/dashboard/videos/${params.videoId}`}
+            href={`/dashboard/videos/${getVideoId()}`}
             className="block text-center text-blue-600 hover:underline text-sm mt-4"
           >
             回到影片詳情
