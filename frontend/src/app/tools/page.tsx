@@ -3,9 +3,6 @@
 import Link from "next/link";
 import { useState, useCallback, useRef } from "react";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
 export default function ToolsPage() {
   const [url, setUrl] = useState("");
   const [mode, setMode] = useState<"extract-caption" | "extract-audio" | "ocr">("extract-caption");
@@ -21,7 +18,15 @@ export default function ToolsPage() {
     setResult(null);
 
     try {
-      const res = await fetch(`${API_BASE}/tools/${mode}`, {
+      const endpoint = mode === "extract-caption" ? "/api/tools/caption"
+        : mode === "ocr" ? "/api/tools/ocr"
+        : "";
+      if (!endpoint) {
+        setError("此功能需要後端伺服器，即將推出獨立版本");
+        setLoading(false);
+        return;
+      }
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: url.trim(), language: "zh" }),
@@ -160,11 +165,10 @@ export default function ToolsPage() {
 
             {/* Audio extract 結果 */}
             {mode === "extract-audio" && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-                <p className="text-lg font-medium text-green-700 mb-1">✅ 音頻提取成功</p>
-                <p className="text-sm text-green-600 mb-4">{result.title} | 時長：{result.duration_seconds || "?"}秒</p>
-                <p className="text-xs text-gray-500 mb-4">🔊 預覽播放（僅在後端運行時可用）</p>
-                <a href={`${API_BASE}/tools/download/${result.audio_url?.split("/").pop()}`} download className="inline-block px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">⬇️ 下載 MP3</a>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+                <p className="text-lg font-medium text-amber-700 mb-1">🎵 影片轉音頻</p>
+                <p className="text-sm text-amber-600 mb-4">此功能需要後端伺服器支援，即將推出</p>
+                <p className="text-xs text-gray-400">目前支援：📝 文案提取、🖼️ 圖片文字辨識</p>
               </div>
             )}
 

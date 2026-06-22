@@ -3,9 +3,6 @@
 import Link from "next/link";
 import { useState, useCallback, useRef } from "react";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
 export default function LandingPage() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +16,7 @@ export default function LandingPage() {
     setError("");
     setResult(null);
     try {
-      const res = await fetch(`${API_BASE}/tools/extract-caption`, {
+      const res = await fetch("/api/tools/caption", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: url.trim(), language: "zh" }),
