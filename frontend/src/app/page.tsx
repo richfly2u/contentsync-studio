@@ -321,7 +321,7 @@ export default function HomePage() {
                     ref={inputRef}
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder="粘貼影片/圖片分享鏈接（支援抖音、小紅書、YouTube 等 50+ 平臺）"
+                    placeholder="張貼影片/圖片分享連結"
                     className="w-full px-4 py-3 bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     rows={2}
                     maxLength={4096}
