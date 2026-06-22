@@ -259,9 +259,17 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="flex-1">
+      <main className="flex-1 relative">
+        {/* Ambient lights (like xhs tool) */}
+        <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute w-[420px] h-[420px] -top-[190px] -right-[110px] rounded-full"
+            style={{background: 'radial-gradient(circle, rgba(246,79,99,0.18), rgba(246,79,99,0) 70%)'}} />
+          <div className="absolute w-[380px] h-[380px] -left-[200px] top-[420px] rounded-full"
+            style={{background: 'radial-gradient(circle, rgba(247,170,112,0.13), rgba(247,170,112,0) 72%)'}} />
+        </div>
+
         {/* ═══ Hero + Tool Panel ═══ */}
-        <section className="py-8 md:py-12 bg-gradient-to-b from-gray-50 to-white dark:from-[#0a0a1a] dark:to-[#0f0b2e]">
+        <section className="relative z-10 py-8 md:py-12">
           <div className="max-w-4xl mx-auto px-4">
             {/* Hero Text */}
             <div className="text-center mb-6">
@@ -273,7 +281,8 @@ export default function HomePage() {
             </div>
 
             {/* ── Tool Panel ── */}
-            <div className="bg-white dark:bg-gray-800/60 rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 dark:border-gray-700/20">
+            <div className="backdrop-blur-xl rounded-2xl p-4 md:p-5"
+              style={{background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow)'}}>
               {/* Mode Tabs */}
               <div className="flex gap-1.5 mb-4 flex-wrap">
                 {MODES.map((m) => (
@@ -388,7 +397,8 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800/60 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700/20">
+                <div className="backdrop-blur-xl rounded-xl overflow-hidden"
+                  style={{background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow)'}}>
                   {/* Media Panel */}
                   <div className="bg-gray-50 dark:bg-gray-900/50">
                     {mode === "video-download" && result.video_url && (
@@ -464,7 +474,8 @@ export default function HomePage() {
 
             {/* History */}
             {showHistory && (
-              <div className="max-w-2xl mx-auto mt-4 bg-white dark:bg-gray-800/60 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/20 animate-fade-in">
+              <div className="max-w-2xl mx-auto mt-4 backdrop-blur-xl rounded-xl p-4 animate-fade-in"
+                style={{background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow)'}}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider">RECENT</span>
