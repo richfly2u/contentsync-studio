@@ -2,11 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-[#faf8f7] text-[#252124] dark:bg-[#171416] dark:text-[#f8f3f5];
-  transition: background-color 0.3s ease, color 0.3s ease;
+:root {
+  color-scheme: light;
+  --bg: #faf8f7;
+  --bg-soft: #f4f0ee;
+  --surface: rgba(255, 255, 255, .88);
+  --surface-solid: #fff;
+  --text: #252124;
+  --muted: #776f73;
+  --line: rgba(63, 49, 56, .11);
+  --accent: #f64f63;
+  --accent-dark: #df3e53;
+  --accent-soft: #fff0f2;
+  --success: #25a869;
+  --shadow: 0 26px 80px rgba(72, 45, 53, .11);
+  --shadow-small: 0 12px 35px rgba(72, 45, 53, .09);
+  --radius-xl: 30px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --max: 980px;
 }
 
+.dark {
+  color-scheme: dark;
+  --bg: #171416;
+  --bg-soft: #211c1f;
+  --surface: rgba(37, 31, 34, .9);
+  --surface-solid: #251f22;
+  --text: #f8f3f5;
+  --muted: #b8adb2;
+  --line: rgba(255, 255, 255, .1);
+  --accent-soft: rgba(246, 79, 99, .14);
+  --shadow: 0 26px 80px rgba(0, 0, 0, .3);
+  --shadow-small: 0 12px 35px rgba(0, 0, 0, .23);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background .3s, color .3s;
+}
+
+/* ─── Ambient lights ─── */
+.ambient {
+  position: fixed;
+  z-index: -1;
+  border-radius: 999px;
+  filter: blur(2px);
+  pointer-events: none;
+}
+.ambient-one {
+  width: 420px; height: 420px;
+  top: -190px; right: -110px;
+  background: radial-gradient(circle, rgba(246,79,99,.18), rgba(246,79,99,0) 70%);
+}
+.ambient-two {
+  width: 380px; height: 380px;
+  left: -200px; top: 420px;
+  background: radial-gradient(circle, rgba(247,170,112,.13), rgba(247,170,112,0) 72%);
+}
+
+/* ─── Cards ─── */
+.parse-card, .result-card, .history-section {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+.parse-card {
+  padding: clamp(16px, 2.6vw, 24px);
+  border-radius: 22px;
+}
+.result-card {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.history-section {
+  padding: 24px;
+  border-radius: var(--radius-lg);
+}
+
+/* ─── Animations ─── */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }

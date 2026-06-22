@@ -259,29 +259,25 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="flex-1 relative">
-        {/* Ambient lights (like xhs tool) */}
-        <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute w-[420px] h-[420px] -top-[190px] -right-[110px] rounded-full"
-            style={{background: 'radial-gradient(circle, rgba(246,79,99,0.18), rgba(246,79,99,0) 70%)'}} />
-          <div className="absolute w-[380px] h-[380px] -left-[200px] top-[420px] rounded-full"
-            style={{background: 'radial-gradient(circle, rgba(247,170,112,0.13), rgba(247,170,112,0) 72%)'}} />
-        </div>
+      <main className="flex-1">
+        {/* Ambient lights (same as xhs tool) */}
+        <div className="ambient ambient-one" />
+        <div className="ambient ambient-two" />
 
         {/* ═══ Hero + Tool Panel ═══ */}
-        <section className="relative z-10 py-8 md:py-12">
+        <section className="py-8 md:py-12" style={{background: 'transparent'}}>
           <div className="max-w-4xl mx-auto px-4">
             {/* Hero Text */}
             <div className="text-center mb-6">
-              <div className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">免費線上工具</div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                貼上連結，<span className="text-blue-600 dark:text-blue-400">提取影片</span>、<span className="text-blue-600 dark:text-blue-400">文案與圖片</span>
+              <div className="text-[11px] uppercase tracking-wider mb-1" style={{color: 'var(--accent)', fontWeight: 800, letterSpacing: '0.13em'}}>免費線上工具</div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{color: 'var(--text)'}}>
+                貼上連結，<span style={{color: 'var(--accent)'}}>提取影片</span>、<span style={{color: 'var(--accent)'}}>文案與圖片</span>
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">支援小紅書、抖音、TikTok、YouTube、Facebook 等 50+ 平台，免費使用無需註冊</p>
+              <p className="text-sm" style={{color: 'var(--muted)'}}>支援小紅書、抖音、TikTok、YouTube、Facebook 等 50+ 平台，免費使用無需註冊</p>
             </div>
 
-            {/* ── Tool Panel ── */}
-            <div className="bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl rounded-2xl p-4 md:p-5 shadow-xl border border-gray-200/30 dark:border-white/10">
+            {/* ── Tool Panel (parse-card) ── */}
+            <div className="parse-card">
               {/* Mode Tabs */}
               <div className="flex gap-1.5 mb-4 flex-wrap">
                 {MODES.map((m) => (
@@ -396,7 +392,7 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl rounded-xl overflow-hidden shadow-xl border border-gray-200/30 dark:border-white/10">
+                <div className="result-card">
                   {/* Media Panel */}
                   <div className="bg-gray-50 dark:bg-gray-900/50">
                     {mode === "video-download" && result.video_url && (
@@ -472,7 +468,7 @@ export default function HomePage() {
 
             {/* History */}
             {showHistory && (
-              <div className="max-w-2xl mx-auto mt-4 bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl rounded-xl p-4 shadow-xl border border-gray-200/30 dark:border-white/10 animate-fade-in">
+              <div className="history-section animate-fade-in">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider">RECENT</span>
