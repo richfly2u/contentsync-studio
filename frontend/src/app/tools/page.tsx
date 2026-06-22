@@ -18,8 +18,11 @@ export default function ToolsPage() {
     setResult(null);
 
     try {
-      const endpoint = mode === "extract-caption" ? "/api/tools/caption"
-        : mode === "ocr" ? "/api/tools/ocr"
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://108.61.163.87";
+      const endpoint = mode === "extract-caption"
+        ? `${apiBase}/api/v1/tools/caption`
+        : mode === "ocr"
+        ? `${apiBase}/api/v1/tools/ocr`
         : "";
       if (!endpoint) {
         setError("此功能需要後端伺服器，即將推出獨立版本");
