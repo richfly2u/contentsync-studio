@@ -16,7 +16,7 @@ export default function LandingPage() {
     setError("");
     setResult(null);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://108.61.163.87";
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://link2publish.app";
       const res = await fetch(`${apiBase}/api/v1/tools/extract-caption`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

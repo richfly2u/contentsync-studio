@@ -96,7 +96,7 @@ export default function ToolsPage() {
   const remaining = FREE_DOWNLOAD_LIMIT - downloadCount;
   const isDownloadMode = mode === "video-download" || mode === "extract-audio";
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://108.61.163.87";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://link2publish.app";
 
   const MODES: { id: ToolMode; label: string; desc: string }[] = [
     { id: "video-download", label: "影片下載",
