@@ -1,29 +1,28 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ success: false, error: "Method not allowed" });
-  }
-
+export async function POST(request: NextRequest) {
   try {
-    const { url } = req.body || {};
+    const body = await request.json();
+    const { url } = body || {};
     if (!url) {
-      return res.status(400).json({ success: false, error: "缺少 URL" });
+      return NextResponse.json({ success: false, error: "缺少 URL" }, { status: 400 });
     }
 
     const isXiaohongshu = url.includes("xiaohongshu.com") || url.includes("xhslink.com") || url.includes("rednote");
     const isYouTube = url.includes("youtube.com") || url.includes("youtu.be");
 
     if (isXiaohongshu) {
-      const data = await fetchWithTimeout(`https://xhs-html-downloader.vercel.app/api/parse`, {
+      const parseRes = await fetch("https://xhs-html-downloader.vercel.app/api/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
+        signal: AbortSignal.timeout(10000),
       });
+      const data = await parseRes.json();
       if (!data.success) {
-        return res.json({ success: false, error: "小紅書解析失敗" });
+        return NextResponse.json({ success: false, error: "小紅書解析失敗" });
       }
-      return res.json({
+      return NextResponse.json({
         success: true,
         title: data.data.title || "小紅書筆記",
         captions_cleaned: data.data.description || "",
@@ -64,15 +63,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           duration = secs || null;
         }
 
-        return res.json({
+        return NextResponse.json({
           success: true,
           title,
           captions_raw: transText || "此影片無可用字幕",
           captions_cleaned: transText || "此影片無可用字幕",
           duration_seconds: duration,
         });
-      } catch (ytErr: any) {
-        return res.json({
+      } catch {
+        return NextResponse.json({
           success: true,
           title: "YouTube 影片",
           captions_raw: "YouTube 字幕提取失敗，請稍後再試",
@@ -82,15 +81,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    // 其他平台
+    // Other platforms
     try {
-      const data = await fetchWithTimeout(`https://xhs-html-downloader.vercel.app/api/parse`, {
+      const parseRes = await fetch("https://xhs-html-downloader.vercel.app/api/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
+        signal: AbortSignal.timeout(10000),
       });
+      const data = await parseRes.json();
       if (data.success) {
-        return res.json({
+        return NextResponse.json({
           success: true,
           title: data.data.title || "內容",
           captions_cleaned: data.data.description || "",
@@ -100,16 +101,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     } catch {}
 
-    return res.json({
+    return NextResponse.json({
       success: false,
       error: "暫不支援此平台。目前支援：小紅書、YouTube",
     });
   } catch (e: any) {
-    return res.status(500).json({
-      success: false,
-      error: e?.message || "Internal server error",
-      type: e?.constructor?.name || typeof e,
-    });
+    return NextResponse.json(
+      { success: false, error: e?.message || "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -123,15 +123,4 @@ function extractYouTubeId(url: string): string | null {
     if (m) return m[1];
   }
   return null;
-}
-
-async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 8000): Promise<any> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { ...options, signal: controller.signal });
-    return await res.json();
-  } finally {
-    clearTimeout(timer);
-  }
 }
