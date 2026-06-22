@@ -281,11 +281,18 @@ export default function HomePage() {
                   <button
                     key={m.id}
                     onClick={() => { setMode(m.id as ToolMode); setResult(null); setError(""); }}
-                    className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 ${
                       mode === m.id
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/30 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
-                    }`}
+                        ? "glass-card text-white border-0"
+                        : "text-gray-600 dark:text-gray-400"
+                    } ${mode === m.id ? "bg-gradient-to-br from-[#6c5ce7] to-[#a855f7] dark:from-[#6c5ce7] dark:to-[#a855f7]" : ""}`}
+                    style={mode !== m.id ? {
+                      background: 'var(--surface)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: '1.5px solid var(--line)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)'
+                    } : {}}
                   >
                     <span className="mr-1">{m.icon}</span>{m.label}
                     {m.desc && <span className="block text-[10px] opacity-70 mt-0.5">{m.desc}</span>}
