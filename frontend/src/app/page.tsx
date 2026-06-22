@@ -125,8 +125,7 @@ export default function HomePage() {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://link2publish.app";
 
   const MODES: { id: ToolMode; label: string; icon: string; desc: string }[] = [
-    { id: "video-download", label: "影片下載", icon: "🎬",
-      desc: `MP4${!user && remaining > 0 ? `（剩${remaining}次）` : !user && remaining <= 0 ? "（已滿）" : user ? "（無限）" : ""}` },
+    { id: "video-download", label: "影片下載", icon: "🎬", desc: "MP4 下載" },
     { id: "extract-caption", label: "文案提取", icon: "📝", desc: "影片轉文字" },
     { id: "extract-audio", label: "影片轉音頻", icon: "🎵", desc: "提取 MP3" },
     { id: "ocr", label: "圖片文字", icon: "📷", desc: "OCR 辨識" },
