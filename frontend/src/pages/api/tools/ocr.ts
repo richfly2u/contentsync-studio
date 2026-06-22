@@ -1,15 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-export async function POST(req: NextRequest) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ success: false, error: "Method not allowed" });
+  }
+
   try {
-    const { url: imageUrl } = await req.json();
+    const { url: imageUrl } = req.body || {};
     if (!imageUrl) {
-      return NextResponse.json({ success: false, error: "缺少圖片 URL" }, { status: 400 });
+      return res.status(400).json({ success: false, error: "缺少圖片 URL" });
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({
+      return res.status(200).json({
         success: true,
         text: "OCR 功能需要設定 OPENAI_API_KEY 環境變數才能使用。請在 Vercel 專案設定中加入。",
         language_detected: null,
@@ -46,15 +50,12 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content || "";
 
-    return NextResponse.json({
+    return res.json({
       success: true,
       text,
       language_detected: "auto",
     });
   } catch (e: any) {
-    return NextResponse.json(
-      { success: false, text: "", error: `OCR 失敗：${e.message}` },
-      { status: 500 }
-    );
+    return res.status(500).json({ success: false, text: "", error: `OCR 失敗：${e.message}` });
   }
 }
