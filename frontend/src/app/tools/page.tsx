@@ -1,16 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+
+const FREE_LIMIT = 3;
+const STORAGE_KEY = "contentsync_download_count";
+
+function getDownloadCount(): number {
+  if (typeof window === "undefined") return 0;
+  try { return parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10); }
+  catch { return 0; }
+}
+
+function incrementDownloadCount() {
+  try { localStorage.setItem(STORAGE_KEY, String(getDownloadCount() + 1)); }
+  catch {}
+}
 
 type ToolMode = "video-download" | "extract-caption" | "extract-audio" | "ocr";
-
-const MODES: { id: ToolMode; label: string; desc: string }[] = [
-  { id: "video-download", label: "🎬 影片下載", desc: "MP4 原畫質" },
-  { id: "extract-caption", label: "📝 文案提取", desc: "影片轉文字" },
-  { id: "extract-audio", label: "🎵 影片轉音頻", desc: "提取 MP3" },
-  { id: "ocr", label: "🖼️ 圖片文字", desc: "OCR 辨識" },
-];
 
 const PLACEHOLDERS: Record<ToolMode, string> = {
   "video-download": "粘貼影片分享鏈接，直接下載 MP4（支援 50+ 平台）",
@@ -32,7 +39,22 @@ export default function ToolsPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [downloadCount, setDownloadCount] = useState(0);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setDownloadCount(getDownloadCount());
+  }, []);
+
+  const remaining = FREE_LIMIT - downloadCount;
+
+  const MODES: { id: ToolMode; label: string; desc: string }[] = [
+    { id: "video-download", label: "🎬 影片下載",
+      desc: `MP4 原畫質${remaining > 0 && remaining <= 3 ? `（剩${remaining}次）` : remaining <= 0 ? "（已滿）" : ""}` },
+    { id: "extract-caption", label: "📝 文案提取", desc: "影片轉文字" },
+    { id: "extract-audio", label: "🎵 影片轉音頻", desc: "提取 MP3" },
+    { id: "ocr", label: "🖼️ 圖片文字", desc: "OCR 辨識" },
+  ];
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://108.61.163.87";
 
@@ -45,6 +67,13 @@ export default function ToolsPage() {
 
   const handleSubmit = useCallback(async () => {
     if (!url.trim()) return;
+
+    // Video download limit check
+    if (mode === "video-download" && remaining <= 0) {
+      setError(`免費試用次數已用完（${FREE_LIMIT} 次）。`);
+      return;
+    }
+
     setLoading(true);
     setError("");
     setResult(null);
@@ -74,6 +103,10 @@ export default function ToolsPage() {
         setError(data.error || "處理失敗，請檢查連結是否正確");
       } else {
         setResult(data);
+        if (mode === "video-download") {
+          incrementDownloadCount();
+          setDownloadCount(getDownloadCount());
+        }
         setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
       }
     } catch (e: any) {
@@ -172,7 +205,14 @@ export default function ToolsPage() {
 
         {/* 錯誤 */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">{error}</div>
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+            {error}
+            {error.includes("已用完") && (
+              <span className="block mt-2">
+                <Link href="/register" className="text-blue-600 font-medium underline hover:text-blue-800">註冊解鎖無限次下載 →</Link>
+              </span>
+            )}
+          </div>
         )}
 
         {/* 結果區 */}
