@@ -297,8 +297,13 @@ export default function ToolsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 mt-16 py-8 text-center text-sm text-gray-400">
-        &copy; 2026 ContentSync Studio. 免費在線影片下載、文案提取、音頻提取、圖片文字辨識。
+      <footer className="border-t border-gray-100 mt-16 py-8 text-center text-xs text-gray-400">
+        <p>&copy; 2026 ContentSync Studio. 僅供個人學習與研究用途。</p>
+        <div className="flex justify-center gap-4 mt-2">
+          <Link href="/terms" className="text-blue-600 hover:underline">使用條款</Link>
+          <Link href="/dmca" className="text-blue-600 hover:underline">DMCA</Link>
+          <Link href="/tools" className="text-blue-600 hover:underline">免費工具</Link>
+        </div>
       </footer>
     </div>
   );

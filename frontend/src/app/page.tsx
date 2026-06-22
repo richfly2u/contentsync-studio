@@ -268,8 +268,11 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8 text-sm">
           <div>
             <h3 className="font-bold mb-3">🎬 ContentSync Studio</h3>
-            <p className="text-gray-500">支援 50+ 平臺影片文案提取、去浮水印、轉音頻。免費在線使用。</p>
+            <p className="text-gray-500">支援 50+ 平臺影片文案提取、轉音頻、圖片文字辨識。免費在線使用。</p>
             <p className="text-gray-400 mt-2">&copy; 2026 ContentSync Studio</p>
+            <p className="text-xs text-gray-400 mt-3 italic border-t border-gray-100 pt-3">
+              僅供個人學習與研究用途。用戶須確保擁有內容使用權限。
+            </p>
           </div>
           <div>
             <h3 className="font-bold mb-3">工具</h3>
@@ -282,7 +285,12 @@ export default function LandingPage() {
             </ul>
           </div>
           <div>
-            <h3 className="font-bold mb-3">支援平臺</h3>
+            <h3 className="font-bold mb-3">法律</h3>
+            <ul className="space-y-1 text-gray-500">
+              <li><Link href="/terms" className="hover:text-blue-600">使用條款</Link></li>
+              <li><Link href="/dmca" className="hover:text-blue-600">DMCA</Link></li>
+            </ul>
+            <h3 className="font-bold mb-3 mt-5">支援平臺</h3>
             <ul className="space-y-1 text-gray-500">
               {["抖音", "小紅書", "YouTube", "TikTok", "快手", "B站", "微博", "Facebook", "Instagram"].map((p) => (
                 <li key={p}>{p}</li>
