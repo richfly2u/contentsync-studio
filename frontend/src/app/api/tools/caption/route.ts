@@ -1,11 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+export const runtime = "edge";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { url } = body || {};
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ success: false, error: "無效的 JSON" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const { url } = body;
     if (!url) {
-      return NextResponse.json({ success: false, error: "缺少 URL" }, { status: 400 });
+      return new Response(JSON.stringify({ success: false, error: "缺少 URL" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const isXiaohongshu = url.includes("xiaohongshu.com") || url.includes("xhslink.com") || url.includes("rednote");
@@ -20,17 +32,23 @@ export async function POST(request: NextRequest) {
       });
       const data = await parseRes.json();
       if (!data.success) {
-        return NextResponse.json({ success: false, error: "小紅書解析失敗" });
+        return new Response(JSON.stringify({ success: false, error: "小紅書解析失敗" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       }
-      return NextResponse.json({
-        success: true,
-        title: data.data.title || "小紅書筆記",
-        captions_cleaned: data.data.description || "",
-        captions_raw: data.data.description || "",
-        duration_seconds: null,
-        images: data.data.images || [],
-        videoUrl: data.data.videoUrl,
-      });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          title: data.data.title || "小紅書筆記",
+          captions_cleaned: data.data.description || "",
+          captions_raw: data.data.description || "",
+          duration_seconds: null,
+          images: data.data.images || [],
+          videoUrl: data.data.videoUrl,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     if (isYouTube) {
@@ -63,21 +81,27 @@ export async function POST(request: NextRequest) {
           duration = secs || null;
         }
 
-        return NextResponse.json({
-          success: true,
-          title,
-          captions_raw: transText || "此影片無可用字幕",
-          captions_cleaned: transText || "此影片無可用字幕",
-          duration_seconds: duration,
-        });
+        return new Response(
+          JSON.stringify({
+            success: true,
+            title,
+            captions_raw: transText || "此影片無可用字幕",
+            captions_cleaned: transText || "此影片無可用字幕",
+            duration_seconds: duration,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
       } catch {
-        return NextResponse.json({
-          success: true,
-          title: "YouTube 影片",
-          captions_raw: "YouTube 字幕提取失敗，請稍後再試",
-          captions_cleaned: "YouTube 字幕提取失敗，請稍後再試",
-          duration_seconds: null,
-        });
+        return new Response(
+          JSON.stringify({
+            success: true,
+            title: "YouTube 影片",
+            captions_raw: "YouTube 字幕提取失敗，請稍後再試",
+            captions_cleaned: "YouTube 字幕提取失敗，請稍後再試",
+            duration_seconds: null,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
       }
     }
 
@@ -91,24 +115,30 @@ export async function POST(request: NextRequest) {
       });
       const data = await parseRes.json();
       if (data.success) {
-        return NextResponse.json({
-          success: true,
-          title: data.data.title || "內容",
-          captions_cleaned: data.data.description || "",
-          captions_raw: data.data.description || "",
-          duration_seconds: null,
-        });
+        return new Response(
+          JSON.stringify({
+            success: true,
+            title: data.data.title || "內容",
+            captions_cleaned: data.data.description || "",
+            captions_raw: data.data.description || "",
+            duration_seconds: null,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
       }
     } catch {}
 
-    return NextResponse.json({
-      success: false,
-      error: "暫不支援此平台。目前支援：小紅書、YouTube",
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "暫不支援此平台。目前支援：小紅書、YouTube",
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (e: any) {
-    return NextResponse.json(
-      { success: false, error: e?.message || "Internal server error" },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ success: false, error: e?.message || "Internal error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 }

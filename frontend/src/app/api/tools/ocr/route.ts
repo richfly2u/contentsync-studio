@@ -1,20 +1,35 @@
-import { NextRequest, NextResponse } from "next/server";
+export const runtime = "edge";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { url: imageUrl } = body || {};
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ success: false, error: "無效的 JSON" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const { url: imageUrl } = body;
     if (!imageUrl) {
-      return NextResponse.json({ success: false, error: "缺少圖片 URL" }, { status: 400 });
+      return new Response(JSON.stringify({ success: false, error: "缺少圖片 URL" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({
-        success: true,
-        text: "OCR 功能需要設定 OPENAI_API_KEY 環境變數才能使用。請在 Vercel 專案設定中加入。",
-        language_detected: null,
-      });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          text: "OCR 功能需要設定 OPENAI_API_KEY 環境變數才能使用。請在 Vercel 專案設定中加入。",
+          language_detected: null,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -47,15 +62,14 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content || "";
 
-    return NextResponse.json({
-      success: true,
-      text,
-      language_detected: "auto",
-    });
+    return new Response(
+      JSON.stringify({ success: true, text, language_detected: "auto" }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (e: any) {
-    return NextResponse.json(
-      { success: false, text: "", error: `OCR 失敗：${e.message}` },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ success: false, text: "", error: `OCR 失敗：${e.message}` }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 }
