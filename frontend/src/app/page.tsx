@@ -276,7 +276,7 @@ export default function HomePage() {
             {/* ── Tool Panel ── */}
             <div className="glass-card p-4 md:p-5">
               {/* Mode Tabs */}
-              <div className="flex gap-1.5 mb-4 flex-wrap">
+              <div className="grid grid-cols-4 gap-3 mb-4">
                 {MODES.map((m, idx) => {
                   const colors = [
                     { border: 'rgba(52,211,153,0.4)', glow: 'rgba(52,211,153,0.9)', shadow: 'rgba(52,211,153,0.4)' },
@@ -290,7 +290,7 @@ export default function HomePage() {
                   <button
                     key={m.id}
                     onClick={() => { setMode(m.id as ToolMode); setResult(null); setError(""); }}
-                    className={`px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 ${
+                    className={`w-full px-2 py-3 rounded-xl text-xs font-medium transition-all duration-200 text-center ${
                       isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'
                     }`}
                     style={isActive ? {
