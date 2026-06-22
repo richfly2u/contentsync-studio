@@ -279,10 +279,10 @@ export default function HomePage() {
               <div className="flex gap-1.5 mb-4 flex-wrap">
                 {MODES.map((m, idx) => {
                   const colors = [
-                    { border: 'rgba(52,211,153,0.4)', glow: 'rgba(52,211,153,0.08)', active: 'from-emerald-500 to-green-500' },
-                    { border: 'rgba(96,165,250,0.4)', glow: 'rgba(96,165,250,0.08)', active: 'from-blue-500 to-indigo-500' },
-                    { border: 'rgba(251,191,36,0.4)', glow: 'rgba(251,191,36,0.08)', active: 'from-amber-400 to-orange-500' },
-                    { border: 'rgba(168,85,247,0.4)', glow: 'rgba(168,85,247,0.08)', active: 'from-purple-500 to-violet-600' },
+                    { border: 'rgba(52,211,153,0.4)', glow: 'rgba(52,211,153,0.6)', text: 'rgb(52,211,153)' },
+                    { border: 'rgba(96,165,250,0.4)', glow: 'rgba(96,165,250,0.6)', text: 'rgb(96,165,250)' },
+                    { border: 'rgba(251,191,36,0.4)', glow: 'rgba(251,191,36,0.6)', text: 'rgb(251,191,36)' },
+                    { border: 'rgba(168,85,247,0.4)', glow: 'rgba(168,85,247,0.6)', text: 'rgb(168,85,247)' },
                   ];
                   const c = colors[idx];
                   const isActive = mode === m.id;
@@ -299,13 +299,13 @@ export default function HomePage() {
                                    idx === 2 ? 'linear-gradient(135deg, #d97706, #f59e0b)' :
                                                'linear-gradient(135deg, #7c3aed, #9333ea)',
                       border: '1.5px solid transparent',
-                      boxShadow: `0 0 20px ${c.glow}, 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)`
+                      boxShadow: `0 0 30px ${c.glow}, 0 0 60px ${c.glow}, 0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3)`
                     } : {
                       background: 'var(--surface)',
                       backdropFilter: 'blur(8px)',
                       WebkitBackdropFilter: 'blur(8px)',
                       border: `1.5px solid ${c.border}`,
-                      boxShadow: `0 0 16px ${c.glow}, 0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)`
+                      boxShadow: `0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.2)`
                     }}
                   >
                     <span className="mr-1">{m.icon}</span>{m.label}
