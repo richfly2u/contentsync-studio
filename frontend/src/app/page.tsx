@@ -279,10 +279,10 @@ export default function HomePage() {
               <div className="flex gap-1.5 mb-4 flex-wrap">
                 {MODES.map((m, idx) => {
                   const colors = [
-                    { border: 'rgba(52,211,153,0.4)', glow: 'rgba(52,211,153,0.6)', text: 'rgb(52,211,153)' },
-                    { border: 'rgba(96,165,250,0.4)', glow: 'rgba(96,165,250,0.6)', text: 'rgb(96,165,250)' },
-                    { border: 'rgba(251,191,36,0.4)', glow: 'rgba(251,191,36,0.6)', text: 'rgb(251,191,36)' },
-                    { border: 'rgba(168,85,247,0.4)', glow: 'rgba(168,85,247,0.6)', text: 'rgb(168,85,247)' },
+                    { border: 'rgba(52,211,153,0.4)', glow: 'rgba(52,211,153,0.9)', shadow: 'rgba(52,211,153,0.4)' },
+                    { border: 'rgba(96,165,250,0.4)', glow: 'rgba(96,165,250,0.9)', shadow: 'rgba(96,165,250,0.4)' },
+                    { border: 'rgba(251,191,36,0.4)', glow: 'rgba(251,191,36,0.9)', shadow: 'rgba(251,191,36,0.4)' },
+                    { border: 'rgba(168,85,247,0.4)', glow: 'rgba(168,85,247,0.9)', shadow: 'rgba(168,85,247,0.4)' },
                   ];
                   const c = colors[idx];
                   const isActive = mode === m.id;
@@ -299,7 +299,7 @@ export default function HomePage() {
                                    idx === 2 ? 'linear-gradient(135deg, #d97706, #f59e0b)' :
                                                'linear-gradient(135deg, #7c3aed, #9333ea)',
                       border: '1.5px solid transparent',
-                      boxShadow: `0 0 30px ${c.glow}, 0 0 60px ${c.glow}, 0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3)`
+                      boxShadow: `0 0 20px ${c.glow}, 0 0 50px ${c.glow}, 0 0 100px ${c.shadow}, 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)`
                     } : {
                       background: 'var(--surface)',
                       backdropFilter: 'blur(8px)',
