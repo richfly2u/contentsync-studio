@@ -264,9 +264,9 @@ export default function HomePage() {
         <section className="relative overflow-hidden py-8 md:py-12 bg-gradient-to-b from-blue-50 to-white dark:from-[#0a0a1a] dark:via-[#0f0b2e] dark:to-[#0a0a1a]">
           {/* Decorative blobs (visible behind glass panels) */}
           <div className="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
-            <div className="absolute top-10 left-[10%] w-64 h-64 bg-blue-300/30 dark:bg-blue-600/15 rounded-full blur-3xl" />
-            <div className="absolute top-20 right-[15%] w-72 h-72 bg-purple-300/25 dark:bg-purple-600/15 rounded-full blur-3xl" />
-            <div className="absolute bottom-10 left-[40%] w-80 h-80 bg-teal-200/20 dark:bg-teal-500/10 rounded-full blur-3xl" />
+            <div className="absolute top-10 left-[10%] w-80 h-80 bg-blue-400/25 dark:bg-blue-500/20 rounded-full blur-3xl" />
+            <div className="absolute top-20 right-[15%] w-80 h-80 bg-purple-400/20 dark:bg-purple-500/15 rounded-full blur-3xl" />
+            <div className="absolute bottom-5 left-[35%] w-96 h-96 bg-teal-300/20 dark:bg-teal-400/10 rounded-full blur-3xl" />
           </div>
           <div className="max-w-4xl mx-auto px-4 relative">
             {/* Hero Text */}
