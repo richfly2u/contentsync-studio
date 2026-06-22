@@ -39,3 +39,18 @@ class CaptionExtractResponse(BaseModel):
     captions_cleaned: Optional[str] = None
     duration_seconds: Optional[int] = None
     error: Optional[str] = None
+
+
+class VideoDownloadRequest(BaseModel):
+    url: HttpUrl
+    platform: Optional[str] = "auto"
+    remove_watermark: bool = False
+
+
+class VideoDownloadResponse(BaseModel):
+    success: bool
+    title: str
+    video_url: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    filesize_mb: Optional[float] = None
+    error: Optional[str] = None

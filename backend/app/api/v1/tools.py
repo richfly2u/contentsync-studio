@@ -208,7 +208,35 @@ async def extract_caption_endpoint(data: CaptionExtractRequest):
         )
 
 
-# ─── 4. 檔案下載（搭配 extract-audio 回傳） ────────────────────────
+# ─── 4. 影片下載（AnyToCopy 風格 — 貼連結→下載 MP4） ───────────────
+
+
+@router.post("/video-download", response_model=VideoDownloadResponse)
+async def video_download_endpoint(data: VideoDownloadRequest):
+    """Download video from a social media link → return MP4 download URL."""
+    try:
+        video = await _download_video(str(data.url))
+        file_path = video["file_path"]
+        file_size = os.path.getsize(file_path) / (1024 * 1024)  # MB
+
+        video_url = f"/api/v1/tools/download/{Path(file_path).name}"
+
+        return VideoDownloadResponse(
+            success=True,
+            title=video["title"],
+            video_url=video_url,
+            duration_seconds=video["duration"],
+            filesize_mb=round(file_size, 1),
+        )
+    except Exception as e:
+        return VideoDownloadResponse(
+            success=False,
+            title="",
+            error=f"下載失敗：{str(e)}",
+        )
+
+
+# ─── 5. 檔案下載（搭配 extract-audio / video-download 回傳） ────────
 
 
 @router.get("/download/{filename}")

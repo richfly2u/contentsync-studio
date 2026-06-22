@@ -16,7 +16,8 @@ export default function LandingPage() {
     setError("");
     setResult(null);
     try {
-      const res = await fetch("/api/tools/caption", {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://108.61.163.87";
+      const res = await fetch(`${apiBase}/api/v1/tools/extract-caption`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: url.trim(), language: "zh" }),
@@ -273,6 +274,7 @@ export default function LandingPage() {
           <div>
             <h3 className="font-bold mb-3">工具</h3>
             <ul className="space-y-1 text-gray-500">
+              <li><Link href="/tools" className="hover:text-blue-600">影片下載</Link></li>
               <li><Link href="/tools" className="hover:text-blue-600">文案提取</Link></li>
               <li><Link href="/tools" className="hover:text-blue-600">影片轉音頻</Link></li>
               <li><Link href="/tools" className="hover:text-blue-600">圖片文字辨識</Link></li>
