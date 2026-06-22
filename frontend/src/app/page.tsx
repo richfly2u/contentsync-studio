@@ -261,14 +261,8 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* ═══ Hero + Tool Panel ═══ */}
-        <section className="relative overflow-hidden py-8 md:py-12 bg-gradient-to-b from-blue-50 to-white dark:from-[#0a0a1a] dark:via-[#0f0b2e] dark:to-[#0a0a1a]">
-          {/* Decorative blobs (visible behind glass panels) */}
-          <div className="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
-            <div className="absolute top-10 left-[10%] w-80 h-80 bg-blue-400/25 dark:bg-blue-500/20 rounded-full blur-3xl" />
-            <div className="absolute top-20 right-[15%] w-80 h-80 bg-purple-400/20 dark:bg-purple-500/15 rounded-full blur-3xl" />
-            <div className="absolute bottom-5 left-[35%] w-96 h-96 bg-teal-300/20 dark:bg-teal-400/10 rounded-full blur-3xl" />
-          </div>
-          <div className="max-w-4xl mx-auto px-4 relative">
+        <section className="py-8 md:py-12 bg-gradient-to-b from-gray-50 to-white dark:from-[#0a0a1a] dark:to-[#0f0b2e]">
+          <div className="max-w-4xl mx-auto px-4">
             {/* Hero Text */}
             <div className="text-center mb-6">
               <div className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">免費線上工具</div>
@@ -278,8 +272,8 @@ export default function HomePage() {
               <p className="text-sm text-gray-500 dark:text-gray-400">支援小紅書、抖音、TikTok、YouTube、Facebook 等 50+ 平台，免費使用無需註冊</p>
             </div>
 
-            {/* ── Tool Panel (Glass) ── */}
-            <div className="glass-card rounded-2xl p-4 md:p-5">
+            {/* ── Tool Panel ── */}
+            <div className="bg-white dark:bg-gray-800/60 rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 dark:border-gray-700/20">
               {/* Mode Tabs */}
               <div className="flex gap-1.5 mb-4 flex-wrap">
                 {MODES.map((m) => (
@@ -394,7 +388,7 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="glass-card-strong rounded-xl overflow-hidden">
+                <div className="bg-white dark:bg-gray-800/60 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700/20">
                   {/* Media Panel */}
                   <div className="bg-gray-50 dark:bg-gray-900/50">
                     {mode === "video-download" && result.video_url && (
@@ -470,7 +464,7 @@ export default function HomePage() {
 
             {/* History */}
             {showHistory && (
-              <div className="max-w-2xl mx-auto mt-4 glass-card-strong rounded-xl p-4 animate-fade-in">
+              <div className="max-w-2xl mx-auto mt-4 bg-white dark:bg-gray-800/60 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/20 animate-fade-in">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider">RECENT</span>
