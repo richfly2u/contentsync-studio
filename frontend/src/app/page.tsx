@@ -276,8 +276,8 @@ export default function HomePage() {
               <p className="text-sm" style={{color: 'var(--muted)'}}>支援小紅書、抖音、TikTok、YouTube、Facebook 等 50+ 平台，免費使用無需註冊</p>
             </div>
 
-            {/* ── Tool Panel (parse-card) ── */}
-            <div className="parse-card">
+            {/* ── Tool Panel ── */}
+            <div className="glass-card p-4 md:p-5">
               {/* Mode Tabs */}
               <div className="flex gap-1.5 mb-4 flex-wrap">
                 {MODES.map((m) => (
@@ -392,7 +392,7 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="result-card">
+                <div className="glass-card overflow-hidden">
                   {/* Media Panel */}
                   <div className="bg-gray-50 dark:bg-gray-900/50">
                     {mode === "video-download" && result.video_url && (
@@ -468,7 +468,7 @@ export default function HomePage() {
 
             {/* History */}
             {showHistory && (
-              <div className="history-section animate-fade-in">
+              <div className="glass-card p-4 animate-fade-in">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider">RECENT</span>
