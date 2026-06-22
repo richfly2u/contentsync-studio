@@ -337,7 +337,7 @@ export default function HomePage() {
                 <button
                   onClick={() => handleParse()}
                   disabled={loading || !url.trim() || (needsUpgrade && isDownloadMode)}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl text-sm font-bold hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shrink-0 shadow-lg shadow-blue-600/30"
                 >
                   {loading ? (
                     <span className="flex items-center gap-1.5">
