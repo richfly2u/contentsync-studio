@@ -322,7 +322,7 @@ export default function HomePage() {
                     ref={inputRef}
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder="張貼影片/圖片\n分享連結"
+                    placeholder={"張貼影片/圖片\n分享連結"}
                     className="w-full px-5 py-4 bg-blue-50/60 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700/50 rounded-2xl text-base focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-200/40 dark:focus:ring-blue-700/30 focus:bg-white dark:focus:bg-gray-900/80 resize-none shadow-sm"
                     rows={2}
                     maxLength={4096}
