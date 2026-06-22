@@ -35,8 +35,9 @@ export default function VideoDetailPage() {
   const [activeTab, setActiveTab] = useState("info");
 
   useEffect(() => {
-    const videoId = params?.id;
-    if (!videoId) return;
+    const rawId = params?.id;
+    if (!rawId) return;
+    const videoId = Array.isArray(rawId) ? rawId[0] : rawId;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         router.push("/login");
@@ -74,8 +75,9 @@ export default function VideoDetailPage() {
   };
 
   const handleTranscribe = async () => {
-    const videoId = params?.id;
-    if (!videoId) return;
+    const rawId = params?.id;
+    if (!rawId) return;
+    const videoId = Array.isArray(rawId) ? rawId[0] : rawId;
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     if (!token) return;

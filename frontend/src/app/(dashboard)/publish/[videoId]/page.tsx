@@ -28,8 +28,9 @@ export default function PublishVideoPage() {
   ];
 
   useEffect(() => {
-    const videoId = params?.videoId;
-    if (!videoId) return;
+    const rawId = params?.videoId;
+    if (!rawId) return;
+    const videoId = Array.isArray(rawId) ? rawId[0] : rawId;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         router.push("/login");
@@ -74,8 +75,9 @@ export default function PublishVideoPage() {
   };
 
   const handlePublish = async () => {
-    const videoId = params?.videoId;
-    if (!videoId) return;
+    const rawId = params?.videoId;
+    if (!rawId) return;
+    const videoId = Array.isArray(rawId) ? rawId[0] : rawId;
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     if (!token || selectedPlatforms.length === 0) return;
