@@ -281,8 +281,7 @@ export default function HomePage() {
             </div>
 
             {/* ── Tool Panel ── */}
-            <div className="backdrop-blur-xl rounded-2xl p-4 md:p-5"
-              style={{background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow)'}}>
+            <div className="bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl rounded-2xl p-4 md:p-5 shadow-xl border border-gray-200/30 dark:border-white/10">
               {/* Mode Tabs */}
               <div className="flex gap-1.5 mb-4 flex-wrap">
                 {MODES.map((m) => (
@@ -397,8 +396,7 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="backdrop-blur-xl rounded-xl overflow-hidden"
-                  style={{background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow)'}}>
+                <div className="bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl rounded-xl overflow-hidden shadow-xl border border-gray-200/30 dark:border-white/10">
                   {/* Media Panel */}
                   <div className="bg-gray-50 dark:bg-gray-900/50">
                     {mode === "video-download" && result.video_url && (
@@ -474,8 +472,7 @@ export default function HomePage() {
 
             {/* History */}
             {showHistory && (
-              <div className="max-w-2xl mx-auto mt-4 backdrop-blur-xl rounded-xl p-4 animate-fade-in"
-                style={{background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'var(--shadow)'}}>
+              <div className="max-w-2xl mx-auto mt-4 bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl rounded-xl p-4 shadow-xl border border-gray-200/30 dark:border-white/10 animate-fade-in">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider">RECENT</span>

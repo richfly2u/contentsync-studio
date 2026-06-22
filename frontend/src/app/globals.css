@@ -2,28 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #faf8f7;
-  --surface: rgba(255, 255, 255, .88);
-  --line: rgba(63, 49, 56, .11);
-  --shadow: 0 26px 80px rgba(72, 45, 53, .11);
-}
-
-.dark {
-  --bg: #171416;
-  --surface: rgba(37, 31, 34, .9);
-  --line: rgba(255, 255, 255, .1);
-  --shadow: 0 26px 80px rgba(0, 0, 0, .3);
-}
-
 body {
-  background: var(--bg);
-  color: #252124;
+  @apply bg-[#faf8f7] text-[#252124] dark:bg-[#171416] dark:text-[#f8f3f5];
   transition: background-color 0.3s ease, color 0.3s ease;
-}
-.dark body,
-body.dark {
-  color: #f8f3f5;
 }
 
 @keyframes fade-in {
