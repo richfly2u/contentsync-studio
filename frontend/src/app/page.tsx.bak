@@ -12,10 +12,13 @@ const STORAGE_KEY = "cs_download_count";
 const HISTORY_KEY = "cs_parse_history";
 const MAX_HISTORY = 30;
 
+type ToolMode = "video-download" | "extract-caption" | "extract-audio" | "ocr";
+
 interface HistoryItem {
   id: string;
   url: string;
   title: string;
+  mode: ToolMode;
   type: "video" | "images" | "text" | "audio";
   thumbnail?: string;
   platform?: string;
@@ -100,6 +103,7 @@ function ThemeToggle() {
 // ─── Main Page ──────────────────────────────────────────────────────
 export default function HomePage() {
   const [url, setUrl] = useState("");
+  const [mode, setMode] = useState<ToolMode>("video-download");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
@@ -112,11 +116,6 @@ export default function HomePage() {
   const resultRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Secondary action state
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [actionResult, setActionResult] = useState<any>(null);
-  const [actionError, setActionError] = useState("");
-
   useEffect(() => {
     setDownloadCount(getDownloadCount());
     setHistory(getHistory());
@@ -124,13 +123,29 @@ export default function HomePage() {
   }, []);
 
   const remaining = FREE_DOWNLOAD_LIMIT - downloadCount;
+  const isDownloadMode = mode === "video-download" || mode === "extract-audio";
+
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://link2publish.app";
+
+  const MODES: { id: ToolMode; label: string; icon: string; desc: string }[] = [
+    { id: "video-download", label: "影片下載", icon: "🎬", desc: "MP4 下載" },
+    { id: "extract-caption", label: "文案提取", icon: "📝", desc: "影片轉文字" },
+    { id: "extract-audio", label: "影片轉音頻", icon: "🎵", desc: "提取 MP3" },
+    { id: "ocr", label: "圖片文字", icon: "📷", desc: "OCR 辨識" },
+  ];
+
+  const endpointMap: Record<ToolMode, string> = {
+    "video-download": `${apiBase}/api/v1/tools/video-download`,
+    "extract-caption": `${apiBase}/api/v1/tools/extract-caption`,
+    "extract-audio": `${apiBase}/api/v1/tools/extract-audio`,
+    ocr: `${apiBase}/api/v1/tools/ocr`,
+  };
 
   const handleParse = useCallback(async (parseUrl?: string) => {
     const targetUrl = parseUrl || url;
     if (!targetUrl.trim()) return;
 
-    if (!user && remaining <= 0) {
+    if (!user && isDownloadMode && remaining <= 0) {
       setError(`免費試用次數已用完（${FREE_DOWNLOAD_LIMIT} 次）。`);
       return;
     }
@@ -138,14 +153,19 @@ export default function HomePage() {
     setLoading(true);
     setError("");
     setResult(null);
-    setActionResult(null);
-    setActionError("");
 
     try {
-      const endpoint = `${apiBase}/api/v1/tools/video-download`;
+      const endpoint = endpointMap[mode];
+      const body: Record<string, any> =
+        mode === "ocr"
+          ? { image_url: targetUrl.trim(), language: "chi_sim+eng" }
+          : { url: targetUrl.trim(), language: "zh" };
+
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
+
+      // Add Turnstile token for unauthenticated users
       if (!user && turnstileToken) {
         headers["x-turnstile-token"] = turnstileToken;
       }
@@ -153,7 +173,7 @@ export default function HomePage() {
       const res = await fetch(endpoint, {
         method: "POST",
         headers,
-        body: JSON.stringify({ url: targetUrl.trim(), language: "zh" }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
@@ -167,7 +187,7 @@ export default function HomePage() {
       } else {
         setResult(data);
 
-        if (!user) {
+        if (!user && isDownloadMode) {
           incrementDownloadCount();
           setDownloadCount(getDownloadCount());
         }
@@ -177,7 +197,8 @@ export default function HomePage() {
           id: targetUrl,
           url: targetUrl,
           title: data.title || "未命名",
-          type: data.videoUrl ? "video" : data.images?.length ? "images" : "text",
+          mode,
+          type: mode === "video-download" ? "video" : mode === "extract-audio" ? "audio" : "text",
           platform,
           timestamp: Date.now(),
           result: data,
@@ -194,46 +215,7 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [url, user, remaining, turnstileToken]);
-
-  // ─── Step 2: 後續處理（文案/音訊/OCR）────────────────────────────
-  const handleAction = useCallback(async (action: string) => {
-    if (!url.trim()) return;
-    setActionLoading(action);
-    setActionError("");
-    setActionResult(null);
-
-    const actionEndpoints: Record<string, string> = {
-      caption: `${apiBase}/api/v1/tools/extract-caption`,
-      audio: `${apiBase}/api/v1/tools/extract-audio`,
-      ocr: `${apiBase}/api/v1/tools/ocr`,
-    };
-    const actionBodies: Record<string, any> = {
-      caption: { url: url.trim(), language: "zh" },
-      audio: { url: url.trim(), language: "zh" },
-      ocr: { image_url: url.trim(), language: "chi_sim+eng" },
-    };
-
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (!user && turnstileToken) headers["x-turnstile-token"] = turnstileToken;
-
-    try {
-      const res = await fetch(actionEndpoints[action], {
-        method: "POST", headers, body: JSON.stringify(actionBodies[action]),
-      });
-      if (!res.ok) throw new Error(`伺服器錯誤 (${res.status})`);
-      const data = await res.json();
-      if (!data.success) {
-        setActionError(data.error || "處理失敗");
-      } else {
-        setActionResult({ action, data });
-      }
-    } catch (e: any) {
-      setActionError(e.message || "網路錯誤");
-    } finally {
-      setActionLoading(null);
-    }
-  }, [url, user, turnstileToken]);
+  }, [url, mode, user, remaining, isDownloadMode, turnstileToken]);
 
   const handlePaste = async () => {
     try {
@@ -245,15 +227,14 @@ export default function HomePage() {
 
   const loadHistoryItem = useCallback((item: HistoryItem) => {
     setUrl(item.url);
+    setMode(item.mode);
     setResult(item.result);
     setError("");
-    setActionResult(null);
-    setActionError("");
     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
   }, []);
 
   const isPremium = !!user;
-  const needsUpgrade = !isPremium && remaining <= 0;
+  const needsUpgrade = !isPremium && isDownloadMode && remaining <= 0;
 
   // ─── Landing page sections data ───────────────────────────────────
   const faqItems = [
@@ -333,6 +314,47 @@ export default function HomePage() {
                 <span className="text-xs font-bold text-gray-800 dark:text-gray-200">貼上分享內容</span>
               </div>
 
+              {/* Mode Tabs */}
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                {MODES.map((m, idx) => {
+                  const colors = [
+                    { border: 'rgba(52,211,153,0.4)', glow: 'rgba(52,211,153,0.9)', shadow: 'rgba(52,211,153,0.4)' },
+                    { border: 'rgba(96,165,250,0.4)', glow: 'rgba(96,165,250,0.9)', shadow: 'rgba(96,165,250,0.4)' },
+                    { border: 'rgba(251,191,36,0.4)', glow: 'rgba(251,191,36,0.9)', shadow: 'rgba(251,191,36,0.4)' },
+                    { border: 'rgba(168,85,247,0.4)', glow: 'rgba(168,85,247,0.9)', shadow: 'rgba(168,85,247,0.4)' },
+                  ];
+                  const c = colors[idx];
+                  const isActive = mode === m.id;
+                  return (
+                  <button
+                    key={m.id}
+                    onClick={() => { setMode(m.id as ToolMode); setResult(null); setError(""); }}
+                    className={`w-full px-2 py-3 rounded-xl text-xs font-medium transition-all duration-200 text-center ${
+                      isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                    style={isActive ? {
+                      background: idx === 0 ? 'linear-gradient(135deg, #059669, #10b981)' :
+                                   idx === 1 ? 'linear-gradient(135deg, #3b82f6, #6366f1)' :
+                                   idx === 2 ? 'linear-gradient(135deg, #d97706, #f59e0b)' :
+                                               'linear-gradient(135deg, #7c3aed, #9333ea)',
+                      border: '1.5px solid transparent',
+                      boxShadow: `0 0 20px ${c.glow}, 0 0 50px ${c.glow}, 0 0 100px ${c.shadow}, 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)`
+                    } : {
+                      background: 'var(--surface)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: `1.5px solid ${c.border}`,
+                      boxShadow: `0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.2)`
+                    }}
+                  >
+                    <span>{m.icon}</span>
+                    <span className="ml-1">{m.label}</span>
+                    {m.desc && <span className="ml-1 text-[10px] opacity-70">{m.desc}</span>}
+                  </button>
+                  );
+                })}
+              </div>
+
               {/* Input Row */}
               <div className="flex items-start gap-2">
                 <div className="flex-1 relative">
@@ -340,7 +362,7 @@ export default function HomePage() {
                     ref={inputRef}
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder={"請貼上影片/內容\n分享連結"}
+                    placeholder={"張貼影片/圖片\n分享連結"}
                     className="w-full px-5 py-4 bg-blue-50/60 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700/50 rounded-2xl text-sm focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-200/40 dark:focus:ring-blue-700/30 focus:bg-white dark:focus:bg-gray-900/80 resize-none shadow-sm"
                     rows={2}
                     maxLength={4096}
@@ -354,7 +376,7 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => handleParse()}
-                  disabled={loading || !url.trim() || (needsUpgrade)}
+                  disabled={loading || !url.trim() || (needsUpgrade && isDownloadMode)}
                   className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl text-sm font-bold hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shrink-0 shadow-lg shadow-blue-600/30"
                 >
                   {loading ? (
@@ -362,7 +384,7 @@ export default function HomePage() {
                       <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       處理中...
                     </span>
-                  ) : needsUpgrade ? "已達上限，請註冊" : "開始解析"}
+                  ) : needsUpgrade ? "已達上限，請註冊" : "開始提取"}
                 </button>
               </div>
 
@@ -372,7 +394,7 @@ export default function HomePage() {
                   {url.length > 0 ? `${url.length} / 4096` : "免費使用，無需登入"}
                 </span>
                 <div className="flex items-center gap-3">
-                  {!user && (
+                  {isDownloadMode && !user && (
                     <span className="text-amber-600 dark:text-amber-400 font-medium">
                       {remaining > 0 ? `剩餘 ${remaining} 次下載` : "次數已用完"}
                     </span>
@@ -434,7 +456,7 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* ═══ STEP 02: Result + Actions ═══ */}
+            {/* Result */}
             {result && (
               <div ref={resultRef} className="max-w-2xl mx-auto mt-6 space-y-4 animate-fade-in">
                 <div className="flex items-center gap-2">
@@ -446,15 +468,15 @@ export default function HomePage() {
                 </div>
 
                 <div className="glass-card overflow-hidden">
-                  {/* Media Preview */}
+                  {/* Media Panel */}
                   <div className="bg-gray-50 dark:bg-gray-900/50">
-                    {result.video_url && (
+                    {mode === "video-download" && result.video_url && (
                       <div className="p-3">
                         <video src={result.video_url} controls playsInline preload="metadata" className="w-full rounded-lg max-h-80" />
                         <div className="mt-2 flex gap-1.5">
                           <a href={result.video_url} download target="_blank"
-                            className="flex-1 text-center text-xs bg-gradient-to-r from-green-600 to-green-700 text-white py-2.5 rounded-lg hover:from-green-700 hover:to-green-800 font-bold shadow-lg shadow-green-600/30">
-                            ⬇️ 下載影片
+                            className="flex-1 text-center text-xs bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                            ⬇️ 下載 MP4
                           </a>
                           <button onClick={() => navigator.clipboard.writeText(result.video_url)}
                             className="px-3 text-xs border border-gray-200 dark:border-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">
@@ -463,18 +485,41 @@ export default function HomePage() {
                         </div>
                       </div>
                     )}
-                    {result.images?.length > 0 && (
+                    {mode === "extract-audio" && result.audio_url && (
                       <div className="p-3">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {result.images.slice(0, 9).map((img: any, i: number) => (
-                            <div key={i} className="relative group">
-                              <img src={img.url || img} alt="" className="w-full rounded-lg object-cover h-32" loading="lazy" />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                <a href={img.url || img} download target="_blank" className="text-white text-xs bg-black/50 px-2 py-1 rounded">下載</a>
-                              </div>
-                            </div>
-                          ))}
+                        <audio src={result.audio_url} controls className="w-full" />
+                        <div className="mt-2 flex gap-1.5">
+                          <a href={result.audio_url} download target="_blank"
+                            className="flex-1 text-center text-xs bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-700">
+                            ⬇️ 下載 MP3
+                          </a>
+                          <button onClick={() => navigator.clipboard.writeText(result.audio_url)}
+                            className="px-3 text-xs border border-gray-200 dark:border-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">
+                            複製直連
+                          </button>
                         </div>
+                      </div>
+                    )}
+                    {mode === "extract-caption" && (
+                      <div className="p-3">
+                        <div className="bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/30 rounded-lg p-3 max-h-48 overflow-y-auto text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                          {result.captions_cleaned || result.captions_raw || "無文字內容"}
+                        </div>
+                        <div className="mt-2 flex gap-1.5 flex-wrap">
+                          <button onClick={() => navigator.clipboard.writeText(result.captions_cleaned || "")}
+                            className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">📋 複製乾淨文稿</button>
+                          <button onClick={() => navigator.clipboard.writeText(result.captions_raw || "")}
+                            className="px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">📋 複製原始文稿</button>
+                        </div>
+                      </div>
+                    )}
+                    {mode === "ocr" && (
+                      <div className="p-3">
+                        <div className="bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/30 rounded-lg p-3 max-h-48 overflow-y-auto text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                          {result.text || "無文字內容"}
+                        </div>
+                        <button onClick={() => navigator.clipboard.writeText(result.text || "")}
+                          className="mt-2 px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">📋 複製文字</button>
                       </div>
                     )}
                   </div>
@@ -482,7 +527,9 @@ export default function HomePage() {
                   {/* Info */}
                   <div className="p-4">
                     <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 mb-1.5">
-                      <span className="bg-gray-50 dark:bg-gray-800/40 px-1.5 py-0.5 rounded">影片</span>
+                      <span className="bg-gray-50 dark:bg-gray-800/40 px-1.5 py-0.5 rounded">
+                        {mode === "video-download" ? "影片" : mode === "extract-audio" ? "音頻" : mode === "ocr" ? "文字" : "文稿"}
+                      </span>
                       {result.title && <span className="truncate">{detectPlatform(url)}</span>}
                     </div>
                     <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">{result.title || "未命名作品"}</h3>
@@ -490,117 +537,6 @@ export default function HomePage() {
                       <div className="text-[11px] text-gray-500 dark:text-gray-400">時長：{formatDuration(result.duration_seconds)}</div>
                     )}
                   </div>
-                </div>
-
-                {/* ── 後續處理 Action Buttons ── */}
-                <div className="glass-card p-4">
-                  <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mb-3">後續處理</div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <button
-                      onClick={() => handleAction("caption")}
-                      disabled={actionLoading !== null}
-                      className="w-full px-3 py-3 rounded-xl text-xs font-bold transition-all duration-200 text-center text-white"
-                      style={{
-                        background: 'linear-gradient(135deg, #059669, #10b981)',
-                        boxShadow: '0 0 15px rgba(52,211,153,0.5), 0 4px 12px rgba(0,0,0,0.15)',
-                        opacity: actionLoading !== null && actionLoading !== "caption" ? 0.5 : 1,
-                      }}
-                    >
-                      {actionLoading === "caption" ? (
-                        <span className="flex items-center justify-center gap-1.5">
-                          <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />轉寫中
-                        </span>
-                      ) : "📝 提取文案"}
-                    </button>
-                    <button
-                      onClick={() => handleAction("audio")}
-                      disabled={actionLoading !== null}
-                      className="w-full px-3 py-3 rounded-xl text-xs font-bold text-white transition-all duration-200 text-center"
-                      style={{
-                        background: 'linear-gradient(135deg, #d97706, #f59e0b)',
-                        boxShadow: '0 0 15px rgba(251,191,36,0.5), 0 4px 12px rgba(0,0,0,0.15)',
-                        opacity: actionLoading !== null && actionLoading !== "audio" ? 0.5 : 1,
-                      }}
-                    >
-                      {actionLoading === "audio" ? (
-                        <span className="flex items-center justify-center gap-1.5">
-                          <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />處理中
-                        </span>
-                      ) : "🎵 下載音訊"}
-                    </button>
-                    <button
-                      onClick={() => handleAction("ocr")}
-                      disabled={actionLoading !== null}
-                      className="w-full px-3 py-3 rounded-xl text-xs font-bold text-white transition-all duration-200 text-center"
-                      style={{
-                        background: 'linear-gradient(135deg, #7c3aed, #9333ea)',
-                        boxShadow: '0 0 15px rgba(168,85,247,0.5), 0 4px 12px rgba(0,0,0,0.15)',
-                        opacity: actionLoading !== null && actionLoading !== "ocr" ? 0.5 : 1,
-                      }}
-                    >
-                      {actionLoading === "ocr" ? (
-                        <span className="flex items-center justify-center gap-1.5">
-                          <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />辨識中
-                        </span>
-                      ) : "📷 OCR 辨識"}
-                    </button>
-                  </div>
-
-                  {/* Action Error */}
-                  {actionError && (
-                    <div className="mt-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-3 py-2 rounded-lg text-xs">
-                      {actionError}
-                    </div>
-                  )}
-
-                  {/* Action Result */}
-                  {actionResult && (
-                    <div className="mt-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700/30 rounded-xl p-3">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                        <span className="text-[10px] font-medium text-green-700 dark:text-green-400">
-                          {actionResult.action === "caption" ? "文案提取完成" :
-                           actionResult.action === "audio" ? "音訊提取完成" : "OCR 辨識完成"}
-                        </span>
-                      </div>
-
-                      {actionResult.action === "caption" && (
-                        <div>
-                          <div className="bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/30 rounded-lg p-3 max-h-60 overflow-y-auto text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                            {actionResult.data.captions_cleaned || actionResult.data.captions_raw || "無文字內容"}
-                          </div>
-                          <button onClick={() => navigator.clipboard.writeText(actionResult.data.captions_cleaned || actionResult.data.captions_raw || "")}
-                            className="mt-2 px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">
-                            📋 複製文稿
-                          </button>
-                        </div>
-                      )}
-
-                      {actionResult.action === "audio" && actionResult.data.audio_url && (
-                        <div>
-                          <audio src={actionResult.data.audio_url} controls className="w-full" />
-                          <div className="mt-2 flex gap-1.5">
-                            <a href={actionResult.data.audio_url} download target="_blank"
-                              className="flex-1 text-center text-xs bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-700">
-                              ⬇️ 下載 MP3
-                            </a>
-                          </div>
-                        </div>
-                      )}
-
-                      {actionResult.action === "ocr" && (
-                        <div>
-                          <div className="bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/30 rounded-lg p-3 max-h-48 overflow-y-auto text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                            {actionResult.data.text || "無文字內容"}
-                          </div>
-                          <button onClick={() => navigator.clipboard.writeText(actionResult.data.text || "")}
-                            className="mt-2 px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">
-                            📋 複製文字
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             )}
