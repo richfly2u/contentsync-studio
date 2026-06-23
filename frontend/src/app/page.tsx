@@ -308,6 +308,12 @@ export default function HomePage() {
 
             {/* ── Tool Panel ── */}
             <div className="glass-card p-4 md:p-5">
+              {/* Step 01 indicator */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider">STEP 01</span>
+                <span className="text-xs font-bold text-gray-800 dark:text-gray-200">貼上分享內容</span>
+              </div>
+
               {/* Mode Tabs */}
               <div className="grid grid-cols-4 gap-3 mb-4">
                 {MODES.map((m, idx) => {
