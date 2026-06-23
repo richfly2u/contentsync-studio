@@ -260,12 +260,34 @@ export default function HomePage() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link href="/login" className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 px-2 py-1.5">
-              登入
-            </Link>
-            <Link href="/register" className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors">
-              免費註冊
-            </Link>
+            {user ? (
+              <Link href="/dashboard" className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                {user.user_metadata?.avatar_url || user.user_metadata?.picture ? (
+                  <img
+                    src={user.user_metadata?.avatar_url || user.user_metadata?.picture}
+                    alt={user.email}
+                    className="w-7 h-7 rounded-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-medium">
+                    {(user.email?.[0] || "U").toUpperCase()}
+                  </div>
+                )}
+                <span className="text-xs text-gray-600 dark:text-gray-400 max-w-[80px] truncate hidden sm:block">
+                  {user.email?.split("@")[0] || "User"}
+                </span>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 px-2 py-1.5">
+                  登入
+                </Link>
+                <Link href="/register" className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors">
+                  免費註冊
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

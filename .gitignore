@@ -16,3 +16,4 @@ Thumbs.db
 /downloads/
 pgdata/
 .vercel
+.env*

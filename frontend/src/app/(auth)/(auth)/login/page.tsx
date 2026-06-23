@@ -27,7 +27,7 @@ export default function LoginPage() {
           : authError.message
       );
     } else {
-      router.push("/dashboard");
+      router.push("/videos");
     }
     setLoading(false);
   };
