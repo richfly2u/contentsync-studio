@@ -299,11 +299,11 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto px-4">
             {/* Hero Text */}
             <div className="text-center mb-4">
-              <div className="text-[11px] sm:text-xs uppercase tracking-widest mb-1.5" style={{color: '#d4a017', fontWeight: 800, letterSpacing: '0.15em', textShadow: '0 0 20px rgba(212,160,23,0.5), 0 0 40px rgba(212,160,23,0.3)'}}>✦ 免費線上工具 ✦</div>
-              <h1 className="text-base sm:text-lg md:text-xl font-bold" style={{color: 'var(--text)'}}>
+              <div className="text-[11px] sm:text-xs md:text-sm uppercase tracking-widest mb-1.5" style={{color: '#d4a017', fontWeight: 800, letterSpacing: '0.15em', textShadow: '0 0 20px rgba(212,160,23,0.5), 0 0 40px rgba(212,160,23,0.3)'}}>✦ 免費線上工具 ✦</div>
+              <h1 className="text-base sm:text-xl md:text-2xl lg:text-3xl font-bold leading-snug" style={{color: 'var(--text)'}}>
                 貼上連結，提取影片、文案與圖片
               </h1>
-              <span className="text-[11px] sm:text-xs" style={{color: 'var(--muted)'}}>50+ 平台免登入</span>
+              <span className="text-[11px] sm:text-sm md:text-base" style={{color: 'var(--muted)'}}>50+ 平台免登入</span>
             </div>
 
             {/* ── Tool Panel ── */}
