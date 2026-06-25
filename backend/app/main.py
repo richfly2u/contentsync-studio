@@ -52,7 +52,7 @@ def _parse_yt_formats_sync(url: str) -> dict:
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=False)
         title = info.get("title", "YouTube 影片") or ""
-        duration = info.get("duration", 0)
+        duration = int(info.get("duration", 0) or 0)
         thumbnail = info.get("thumbnail", "")
         duration_fmt = f"{duration // 60}:{duration % 60:02d}" if duration else "0:00"
 
