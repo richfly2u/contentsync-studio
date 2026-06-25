@@ -1,7 +1,18 @@
-import { Innertube } from "youtubei.js";
+import * as ytdl from "@distube/ytdl-core";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const qualityLabels: Record<number, string> = {
+  2160: "4K",
+  1440: "2K",
+  1080: "1080p",
+  720: "720p",
+  480: "480p",
+  360: "360p",
+  240: "240p",
+  144: "144p",
+};
 
 export async function POST(request: Request) {
   try {
@@ -22,109 +33,91 @@ export async function POST(request: Request) {
 
     return Response.json({ success: false, error: "暫不支援此平台" }, { status: 400 });
   } catch (e: any) {
-    return Response.json({ success: false, error: e.message || "解析失敗" }, { status: 500 });
+    return Response.json({ success: false, error: e?.message || "解析失敗" }, { status: 500 });
   }
 }
 
 async function handleYouTube(url: string) {
-  const yt = await Innertube.create();
   const videoId = extractYoutubeId(url);
   if (!videoId) {
     return Response.json({ success: false, error: "無效的 YouTube 連結" }, { status: 400 });
   }
 
-  const info = await yt.getInfo(videoId);
-  const formats = info.streaming_data?.formats || [];
-  const adaptive = info.streaming_data?.adaptive_formats || [];
+  const info = await ytdl.getInfo(url, { requestOptions: { headers: { "Accept-Language": "zh-TW" } } });
+  const formats = info.formats;
+  const videoDetails = info.videoDetails;
 
-  // Build video format options (with both video+audio)
+  // Build video format options
   const videoFormats: any[] = [];
-  const combinedFormats = formats.filter((f: any) => f.mime_type?.includes("mp4") && f.has_audio && f.has_video);
+  const seenHeights = new Set<number>();
 
-  // Quality labels mapping
-  const qualityLabels: Record<string, string> = {
-    "2160": "4K",
-    "1440": "2K",
-    "1080": "1080p",
-    "720": "720p",
-    "480": "480p",
-    "360": "360p",
-    "240": "240p",
-    "144": "144p",
-  };
+  // Separate formats by type
+  const combinedFormats = formats.filter(
+    (f: any) => f.hasVideo && f.hasAudio && f.container === "mp4"
+  );
+  const videoOnlyFormats = formats.filter(
+    (f: any) => f.hasVideo && !f.hasAudio
+  );
 
-  for (const f of combinedFormats) {
-    const height = f.height || 0;
-    const label = qualityLabels[String(height)] || `${height}p`;
-    const url = await f.decipher(yt.session.player);
-    const sizeMb = f.content_length ? (Number(f.content_length) / 1024 / 1024).toFixed(1) : "?";
-    videoFormats.push({
-      quality: label,
-      height,
-      url,
-      size_mb: sizeMb + " MB",
-      ext: "mp4",
-      has_audio: true,
-      has_video: true,
-    });
-  }
-
-  // Also extract video-only formats for higher qualities (1080p+)
-  const videoOnlyFormats = adaptive
-    .filter((f: any) => f.mime_type?.includes("mp4") && !f.has_audio && f.has_video)
-    .sort((a: any, b: any) => (b.height || 0) - (a.height || 0));
-
-  const seenHeights = new Set(videoFormats.map((f: any) => f.height));
-  for (const f of videoOnlyFormats) {
+  // Process combined first (sorted by quality desc)
+  for (const f of [...combinedFormats, ...videoOnlyFormats].sort((a, b) => (b.height || 0) - (a.height || 0))) {
     const height = f.height || 0;
     if (seenHeights.has(height)) continue;
     seenHeights.add(height);
 
-    const label = qualityLabels[String(height)] || `${height}p`;
-    const url = await f.decipher(yt.session.player);
-    const sizeMb = f.content_length ? (Number(f.content_length) / 1024 / 1024).toFixed(1) : "?";
+    const label = qualityLabels[height] || `${height}p`;
+    const sizeMb = f.contentLength
+      ? (Number(f.contentLength) / 1024 / 1024).toFixed(1) + " MB"
+      : "?";
+
     videoFormats.push({
       quality: label,
       height,
-      url,
-      size_mb: sizeMb + " MB",
-      ext: "mp4",
-      has_audio: false,
+      url: f.url,
+      size_mb: sizeMb,
+      ext: f.container || "mp4",
+      has_audio: f.hasAudio || false,
       has_video: true,
     });
   }
 
-  // Sort by quality descending
-  videoFormats.sort((a: any, b: any) => b.height - a.height);
-
   // Build audio format options
   const audioFormats: any[] = [];
-  const audioOnly = adaptive
-    .filter((f: any) => f.mime_type?.includes("mp4") && f.has_audio && !f.has_video)
-    .sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0));
+  const audioOnly = formats
+    .filter((f: any) => f.hasAudio && !f.hasVideo && f.audioBitrate)
+    .sort((a, b) => (b.audioBitrate || 0) - (a.audioBitrate || 0));
 
-  for (const f of audioOnly.slice(0, 3)) {
-    const url = await f.decipher(yt.session.player);
-    const bitrateKbps = f.bitrate ? Math.round(f.bitrate / 1000) : 0;
-    const sizeMb = f.content_length ? (Number(f.content_length) / 1024 / 1024).toFixed(1) : "?";
+  const seenBitrates = new Set<number>();
+  for (const f of audioOnly) {
+    const br = f.audioBitrate || 0;
+    if (seenBitrates.has(br)) continue;
+    seenBitrates.add(br);
+
+    const sizeMb = f.contentLength
+      ? (Number(f.contentLength) / 1024 / 1024).toFixed(1) + " MB"
+      : "?";
+
     audioFormats.push({
-      quality: bitrateKbps >= 128 ? `${bitrateKbps} kbps` : `${bitrateKbps} kbps`,
-      bitrate: bitrateKbps,
-      url,
-      size_mb: sizeMb + " MB",
-      ext: "m4a",
+      quality: `${br} kbps`,
+      bitrate: br,
+      url: f.url,
+      size_mb: sizeMb,
+      ext: f.container || "m4a",
     });
+
+    if (audioFormats.length >= 3) break;
   }
 
-  // Thumbnail
-  const thumbnail = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+  const duration = parseInt(videoDetails.lengthSeconds || "0", 10);
+  const thumbnail = videoDetails.thumbnails?.sort((a, b) => b.width - a.width)[0]?.url ||
+    `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
 
   return Response.json({
     success: true,
-    title: info.basic_info?.title || "YouTube 影片",
+    title: videoDetails.title || "YouTube 影片",
     thumbnail,
-    duration_seconds: info.basic_info?.duration || 0,
-    duration_formatted: formatDuration(info.basic_info?.duration || 0),
+    duration_seconds: duration,
+    duration_formatted: formatDuration(duration),
     platform: "YouTube",
     videoFormats,
     audioFormats,
