@@ -18,7 +18,6 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default function SchedulesPage() {
-  const router = useRouter();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
