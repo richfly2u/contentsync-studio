@@ -72,8 +72,8 @@ async function handleYouTube(url: string) {
     (f: any) => f.hasVideo && !f.hasAudio
   );
 
-  // Process combined first (sorted by quality desc)
-  for (const f of [...combinedFormats, ...videoOnlyFormats].sort((a, b) => (b.height || 0) - (a.height || 0))) {
+  // Process combined first (sorted by file size desc, so largest first)
+  for (const f of [...combinedFormats, ...videoOnlyFormats].sort((a, b) => (Number(b.contentLength) || 0) - (Number(a.contentLength) || 0))) {
     const height = f.height || 0;
     if (seenHeights.has(height)) continue;
     seenHeights.add(height);
