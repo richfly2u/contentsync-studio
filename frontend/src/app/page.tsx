@@ -334,8 +334,82 @@ export default function HomePage() {
 
                 {/* ═══ vd6s-style result card ═══ */}
                 <div className="glass-card overflow-hidden">
-                  {/* Thumbnail */}
-                  {result.thumbnail && (
+                  {/* Platform Badge */}
+                  <div className="px-4 pt-3 pb-0 flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      result.platform === "小紅書" 
+                        ? "bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400" 
+                        : "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                    }`}>
+                      {result.platform || "媒體"}
+                    </span>
+                    {result.type === "images" && result.imageCount > 0 && (
+                      <span className="text-[10px] text-gray-400">{result.imageCount} 張圖片</span>
+                    )}
+                  </div>
+
+                  {/* Xiaohongshu: Image Grid */}
+                  {result.platform === "小紅書" && result.images?.length > 0 && (
+                    <div className="px-4 pt-3">
+                      <div className={`grid gap-2 ${
+                        result.images.length === 1 ? "grid-cols-1" :
+                        result.images.length === 2 ? "grid-cols-2" :
+                        result.images.length <= 4 ? "grid-cols-2" : "grid-cols-3"
+                      }`}>
+                        {result.images.slice(0, 9).map((img: any, i: number) => (
+                          <a key={i} href={img.url} download target="_blank"
+                            className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/30 hover:ring-2 hover:ring-red-400 transition-all">
+                            <img src={img.url} alt={`${result.title} ${i+1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { (e.target as HTMLImageElement).src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'><text x='8' y='16'>📷</text></svg>"; }} />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                              <span className="text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md">下載</span>
+                            </div>
+                          </a>
+                        ))}
+                        {result.images.length > 9 && (
+                          <div className="aspect-square rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/30 flex items-center justify-center text-xs text-gray-400">
+                            +{result.images.length - 9}
+                          </div>
+                        )}
+                      </div>
+                      {/* Download All Button */}
+                      {result.images.length > 0 && (
+                        <div className="mt-3 flex gap-2">
+                          <a href={result.images[0].url} download target="_blank"
+                            className="flex-1 text-center text-xs bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors font-medium">
+                            ⬇️ 下載全部 ({result.images.length} 張)
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Xiaohongshu: Video */}
+                  {result.platform === "小紅書" && result.type === "video" && result.videoUrl && (
+                    <div className="px-4 pt-3">
+                      <div className="relative rounded-xl overflow-hidden bg-black">
+                        <video src={result.videoUrl} controls className="w-full max-h-80" preload="metadata" />
+                      </div>
+                      <a href={result.videoUrl} download target="_blank"
+                        className="mt-2 flex items-center justify-center gap-1.5 w-full text-xs bg-red-500 text-white py-2.5 rounded-lg hover:bg-red-600 transition-colors font-medium">
+                        ⬇️ 下載影片
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Xiaohongshu: Description */}
+                  {result.platform === "小紅書" && result.description && (
+                    <div className="px-4 pt-2">
+                      <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium mb-1">📝 文案</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                        {result.description}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Thumbnail (YouTube) */}
+                  {result.platform !== "小紅書" && result.thumbnail && (
                     <div className="relative">
                       <img src={result.thumbnail} alt={result.title} className="w-full object-cover max-h-64"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
