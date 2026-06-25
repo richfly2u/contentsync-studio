@@ -1,37 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/videos";
 
-  // If no code, redirect to login
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=no_code`);
   }
 
-  // Preserve the redirect internally and build response first
-  // so cookies can be set on both request and response
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.redirect(`${origin}/login?error=config_missing`);
+  }
+
   const response = NextResponse.redirect(`${origin}${next}`);
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
+  // Use basic createClient with cookie-like storage
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      flowType: "pkce",
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: true,
+      storage: {
+        getItem(key: string) {
+          const cookie = request.cookies.get(key);
+          return cookie?.value ?? null;
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value);
-            response.cookies.set(name, value, options);
+        setItem(key: string, value: string) {
+          request.cookies.set(key, value);
+          response.cookies.set(key, value, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "lax",
+            secure: true,
           });
         },
+        removeItem(key: string) {
+          request.cookies.delete(key);
+          response.cookies.set(key, "", { path: "/", maxAge: 0 });
+        },
       },
-    }
-  );
+    },
+  });
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
