@@ -31,7 +31,8 @@ export async function POST(request: Request) {
       return await handleXiaohongshu(url);
     }
 
-    return Response.json({ success: false, error: "暫不支援此平台" }, { status: 400 });
+    // Try generic yt-dlp for other platforms (Facebook, TikTok, etc.)
+    return await handleGeneric(url);
   } catch (e: any) {
     return Response.json({ success: false, error: e?.message || "解析失敗" }, { status: 500 });
   }
@@ -119,6 +120,7 @@ async function handleYouTube(url: string) {
     duration_seconds: duration,
     duration_formatted: formatDuration(duration),
     platform: "YouTube",
+    type: "video",
     videoFormats,
     audioFormats,
   });
@@ -131,7 +133,54 @@ async function handleXiaohongshu(url: string) {
     return Response.json({ success: false, error: "小紅書解析失敗" }, { status: 500 });
   }
   const data = await res.json();
-  return Response.json(data);
+
+  // Transform xhs-html-downloader API response to our frontend format
+  const images = (data.images || []).map((img: any) => ({
+    url: img.downloadUrl || img.directUrl || img.previewUrl || "",
+    width: img.width || 0,
+    height: img.height || 0,
+  }));
+
+  const videoUrl = data.video?.downloadUrl || data.video?.directUrl || null;
+
+  return Response.json({
+    success: true,
+    title: data.title || "小紅書筆記",
+    description: data.description || "",
+    thumbnail: data.cover || (images[0]?.url) || "",
+    platform: "小紅書",
+    type: videoUrl ? "video" : "images",
+    images,
+    videoUrl,
+    imageCount: images.length,
+    totalImages: images.length,
+  });
+}
+
+async function handleGeneric(url: string) {
+  // For Facebook, TikTok, Bilibili, etc. — try yt-dlp via distube
+  try {
+    const info = await ytdl.getInfo(url, { requestOptions: { headers: { "Accept-Language": "zh-TW" } } });
+    const videoDetails = info.videoDetails;
+    const duration = parseInt(videoDetails.lengthSeconds || "0", 10);
+    const thumbnail = videoDetails.thumbnails?.sort((a, b) => b.width - a.width)[0]?.url || "";
+
+    return Response.json({
+      success: true,
+      title: videoDetails.title || "影片",
+      thumbnail,
+      duration_seconds: duration,
+      duration_formatted: formatDuration(duration),
+      platform: "通用",
+      type: "video",
+      videoUrl: info.formats?.filter((f: any) => f.hasVideo && f.hasAudio)?.[0]?.url || "",
+    });
+  } catch (e: any) {
+    return Response.json({
+      success: false,
+      error: `暫不支援此平台或無法解析：${e?.message || "未知錯誤"}`,
+    }, { status: 400 });
+  }
 }
 
 function extractYoutubeId(url: string): string | null {
