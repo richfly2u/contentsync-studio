@@ -1,7 +1,6 @@
 import * as ytdl from "@distube/ytdl-core";
 
 export const runtime = "nodejs";
-export const maxDuration = 60; // Allow up to 60s for YouTube parsing
 export const dynamic = "force-dynamic";
 
 const qualityLabels: Record<number, string> = {
@@ -50,14 +49,13 @@ async function handleYouTube(url: string) {
     info = await ytdl.getInfo(url, {
       requestOptions: {
         headers: { "Accept-Language": "zh-TW" },
-        timeout: 15000,
       },
     });
   } catch (e: any) {
     return Response.json({
       success: false,
       error: `YouTube 解析失敗：${e?.message || "未知錯誤"}`,
-    }, { status: 500 });
+    });
   }
   const formats = info.formats;
   const videoDetails = info.videoDetails;
