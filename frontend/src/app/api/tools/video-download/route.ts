@@ -45,16 +45,33 @@ async function handleYouTube(url: string) {
   }
 
   let info;
-  try {
-    info = await ytdl.getInfo(url, {
-      requestOptions: {
-        headers: { "Accept-Language": "zh-TW" },
-      },
-    });
-  } catch (e: any) {
+  let lastError: any;
+  const clientTypes = ["ANDROID", "IOS", "WEB"];
+  for (const client of clientTypes) {
+    try {
+      info = await ytdl.getInfo(url, {
+        clients: [client],
+        requestOptions: {
+          headers: {
+            "Accept-Language": "zh-TW",
+            ...(process.env.YOUTUBE_COOKIES
+              ? { Cookie: process.env.YOUTUBE_COOKIES }
+              : {}),
+          },
+        },
+      });
+      break; // success
+    } catch (e: any) {
+      lastError = e;
+      if (!e.message?.includes("Sign in") && !e.message?.includes("bot")) {
+        break; // non-bot error, don't retry
+      }
+    }
+  }
+  if (!info) {
     return Response.json({
       success: false,
-      error: `YouTube 解析失敗：${e?.message || "未知錯誤"}`,
+      error: `YouTube 解析失敗：${lastError?.message || "未知錯誤"}`,
     });
   }
   const formats = info.formats;
@@ -176,7 +193,30 @@ async function handleXiaohongshu(url: string) {
 async function handleGeneric(url: string) {
   // For Facebook, TikTok, Bilibili, etc. — try yt-dlp via distube
   try {
-    const info = await ytdl.getInfo(url, { requestOptions: { headers: { "Accept-Language": "zh-TW" } } });
+    let info;
+    let lastError: any;
+    const clientTypes = ["ANDROID", "IOS", "WEB"];
+    for (const client of clientTypes) {
+      try {
+        info = await ytdl.getInfo(url, {
+          clients: [client],
+          requestOptions: {
+            headers: {
+              "Accept-Language": "zh-TW",
+              ...(process.env.YOUTUBE_COOKIES
+                ? { Cookie: process.env.YOUTUBE_COOKIES }
+                : {}),
+            },
+          },
+        });
+        break;
+      } catch (e: any) {
+        lastError = e;
+        if (!e.message?.includes("Sign in") && !e.message?.includes("bot")) break;
+      }
+    }
+    if (!info) throw lastError;
+
     const videoDetails = info.videoDetails;
     const duration = parseInt(videoDetails.lengthSeconds || "0", 10);
     const thumbnail = videoDetails.thumbnails?.sort((a, b) => b.width - a.width)[0]?.url || "";
