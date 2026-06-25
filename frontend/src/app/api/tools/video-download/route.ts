@@ -134,26 +134,30 @@ async function handleXiaohongshu(url: string) {
   }
   const data = await res.json();
 
-  // Transform xhs-html-downloader API response to our frontend format
-  const images = (data.images || []).map((img: any) => ({
+  // xhs-html-downloader wraps result in .data property
+  const xhsResult = data.data || data;
+
+  // Transform to our frontend format
+  const images = (xhsResult.images || []).map((img: any) => ({
     url: img.downloadUrl || img.directUrl || img.previewUrl || "",
     width: img.width || 0,
     height: img.height || 0,
   }));
 
-  const videoUrl = data.video?.downloadUrl || data.video?.directUrl || null;
+  const video = xhsResult.video;
+  const videoUrl = video?.downloadUrl || video?.directUrl || null;
 
   return Response.json({
     success: true,
-    title: data.title || "小紅書筆記",
-    description: data.description || "",
-    thumbnail: data.cover || (images[0]?.url) || "",
+    title: xhsResult.title || "小紅書筆記",
+    description: xhsResult.description || "",
+    thumbnail: xhsResult.cover || (images[0]?.url) || "",
     platform: "小紅書",
     type: videoUrl ? "video" : "images",
-    images,
+    images: videoUrl ? [] : images, // video posts don't need image grid
     videoUrl,
-    imageCount: images.length,
-    totalImages: images.length,
+    imageCount: videoUrl ? 0 : images.length,
+    totalImages: videoUrl ? 0 : images.length,
   });
 }
 
