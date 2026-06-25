@@ -357,7 +357,7 @@ export default function HomePage() {
                         result.images.length <= 4 ? "grid-cols-2" : "grid-cols-3"
                       }`}>
                         {result.images.slice(0, 9).map((img: any, i: number) => (
-                          <a key={i} href={img.url} download target="_blank"
+                          <a key={i} href={img.url} download
                             className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700/30 hover:ring-2 hover:ring-red-400 transition-all">
                             <img src={img.url} alt={`${result.title} ${i+1}`}
                               className="w-full h-full object-cover"
@@ -376,7 +376,7 @@ export default function HomePage() {
                       {/* Download All Button */}
                       {result.images.length > 0 && (
                         <div className="mt-3 flex gap-2">
-                          <a href={result.images[0].url} download target="_blank"
+                          <a href={result.images[0].url} download
                             className="flex-1 text-center text-xs bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors font-medium">
                             ⬇️ 下載全部 ({result.images.length} 張)
                           </a>
@@ -391,7 +391,7 @@ export default function HomePage() {
                       <div className="relative rounded-xl overflow-hidden bg-black">
                         <video src={result.videoUrl} controls className="w-full max-h-80" preload="metadata" />
                       </div>
-                      <a href={result.videoUrl} download target="_blank"
+                      <a href={result.videoUrl} download
                         className="mt-2 flex items-center justify-center gap-1.5 w-full text-xs bg-red-500 text-white py-2.5 rounded-lg hover:bg-red-600 transition-colors font-medium">
                         ⬇️ 下載影片
                       </a>
@@ -432,7 +432,7 @@ export default function HomePage() {
                       <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mb-2">🎵 音訊</div>
                       <div className="space-y-1.5">
                         {result.audioFormats.map((af: any, i: number) => (
-                          <a key={i} href={af.url} download target="_blank"
+                          <a key={i} href={af.url} download
                             className="flex items-center justify-between px-3 py-2 rounded-lg bg-white dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/30 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                             style={{borderLeft: "3px solid #ec4899"}}>
                             <div className="flex items-center gap-2">
@@ -462,7 +462,7 @@ export default function HomePage() {
                           if (is4k) badge = "最佳";
                           else if (is1080) badge = "推薦";
                           return (
-                            <a key={i} href={vf.url} download target="_blank"
+                            <a key={i} href={vf.url} download
                               className="flex items-center justify-between px-3 py-2 rounded-lg bg-white dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/30 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                               style={{borderLeft: `3px solid ${is4k ? "#8b5cf6" : is1080 ? "#10b981" : "#6b7280"}`}}>
                               <div className="flex items-center gap-2">
@@ -489,7 +489,7 @@ export default function HomePage() {
                   {/* Download Thumbnail */}
                   {result.thumbnail && (
                     <div className="px-4 py-2 pb-3">
-                      <a href={result.thumbnail} download target="_blank"
+                      <a href={result.thumbnail} download
                         className="inline-flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
                         下載封面
@@ -586,7 +586,7 @@ export default function HomePage() {
                         <div>
                           <audio src={actionResult.data.audio_url} controls className="w-full" />
                           <div className="mt-2 flex gap-1.5">
-                            <a href={actionResult.data.audio_url} download target="_blank"
+                            <a href={actionResult.data.audio_url} download
                               className="flex-1 text-center text-xs bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-700">
                               ⬇️ 下載 MP3
                             </a>
