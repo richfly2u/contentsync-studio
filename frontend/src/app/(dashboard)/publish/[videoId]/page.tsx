@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 
 export default function PublishVideoPage() {
   const params = useParams();
-  const router = useRouter();
   const getVideoId = () => { const r = params?.videoId; return r ? (Array.isArray(r) ? r[0] : r) : ""; };
   const [video, setVideo] = useState<any>(null);
   const [transcript, setTranscript] = useState<any>(null);
@@ -32,21 +30,14 @@ export default function PublishVideoPage() {
     const rawId = params?.videoId;
     if (!rawId) return;
     const videoId = Array.isArray(rawId) ? rawId[0] : rawId;
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      fetchData(session.access_token, videoId);
-    });
+    fetchData(videoId);
   }, [params?.videoId]);
 
-  const fetchData = async (token: string, videoId: string) => {
+  const fetchData = async (videoId: string) => {
     try {
       // Fetch video
       const vRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/videos/${videoId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${process.env.NEXT_PUBLIC_API_URL}/videos/${videoId}`
       );
       if (!vRes.ok) throw new Error("Video not found");
       const v = await vRes.json();
@@ -54,8 +45,7 @@ export default function PublishVideoPage() {
 
       // Fetch transcript for caption
       const tRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`
       );
       if (tRes.ok) {
         const t = await tRes.json();
@@ -79,9 +69,7 @@ export default function PublishVideoPage() {
     const rawId = params?.videoId;
     if (!rawId) return;
     const videoId = Array.isArray(rawId) ? rawId[0] : rawId;
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    if (!token || selectedPlatforms.length === 0) return;
+    if (selectedPlatforms.length === 0) return;
 
     setPublishing(true);
     setError("");
@@ -91,7 +79,6 @@ export default function PublishVideoPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           video_id: videoId,

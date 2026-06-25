@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 
 interface VideoDetail {
@@ -27,7 +26,6 @@ interface Transcript {
 
 export default function VideoDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const [video, setVideo] = useState<VideoDetail | null>(null);
   const [transcript, setTranscript] = useState<Transcript | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,21 +36,14 @@ export default function VideoDetailPage() {
     const rawId = params?.id;
     if (!rawId) return;
     const videoId = Array.isArray(rawId) ? rawId[0] : rawId;
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      fetchData(session.access_token, videoId);
-    });
+    fetchData(videoId);
   }, [params?.id]);
 
-  const fetchData = async (token: string, videoId: string) => {
+  const fetchData = async (videoId: string) => {
     try {
       // Fetch video
       const vRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/videos/${videoId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${process.env.NEXT_PUBLIC_API_URL}/videos/${videoId}`
       );
       if (!vRes.ok) throw new Error("Not found");
       const v = await vRes.json();
@@ -60,8 +51,7 @@ export default function VideoDetailPage() {
 
       // Try fetching transcript
       const tRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`
       );
       if (tRes.ok) {
         setTranscript(await tRes.json());
@@ -78,23 +68,19 @@ export default function VideoDetailPage() {
     const rawId = params?.id;
     if (!rawId) return;
     const videoId = Array.isArray(rawId) ? rawId[0] : rawId;
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    if (!token) return;
 
     setProcessing(true);
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/ai/transcribe/${videoId}`,
-        { method: "POST", headers: { Authorization: `Bearer ${token}` } }
+        { method: "POST" }
       );
       if (!res.ok) throw new Error("Failed to start transcription");
 
       // Poll for completion
       const poll = setInterval(async () => {
         const tRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${process.env.NEXT_PUBLIC_API_URL}/ai/transcript/${videoId}`
         );
         if (tRes.ok) {
           setTranscript(await tRes.json());

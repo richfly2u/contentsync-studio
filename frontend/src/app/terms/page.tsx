@@ -8,7 +8,6 @@ export default function TermsPage() {
           <Link href="/" className="text-lg font-bold">🎬 ContentSync Studio</Link>
           <nav className="flex gap-3 items-center">
             <Link href="/tools" className="text-sm text-blue-600 font-medium">免費工具</Link>
-            <Link href="/login" className="text-sm text-gray-600">登入</Link>
           </nav>
         </div>
       </header>

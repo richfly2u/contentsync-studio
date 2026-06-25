@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 
 export default function NewVideoPage() {
   const router = useRouter();
@@ -16,14 +15,6 @@ export default function NewVideoPage() {
     setLoading(true);
     setError("");
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-    if (!token) {
-      setError("請先登入");
-      setLoading(false);
-      return;
-    }
-
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/videos/import`,
@@ -31,7 +22,6 @@ export default function NewVideoPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ url, source }),
         }

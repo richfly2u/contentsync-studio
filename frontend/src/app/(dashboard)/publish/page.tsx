@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
 interface PublishedItem {
@@ -18,25 +16,17 @@ interface PublishedItem {
 }
 
 export default function PublishedPage() {
-  const router = useRouter();
   const [items, setItems] = useState<PublishedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      fetchData(session.access_token);
-    });
-  }, [router]);
+    fetchData();
+  }, []);
 
-  const fetchData = async (token: string) => {
+  const fetchData = async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/publish`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${process.env.NEXT_PUBLIC_API_URL}/publish`
       );
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();

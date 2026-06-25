@@ -1,40 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      setUser(session.user);
-      setLoading(false);
-    });
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-gray-500">
-        載入中...
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">
-          歡迎回來{user?.user_metadata?.full_name ? `，${user.user_metadata.full_name}` : ""}
-        </h1>
+        <h1 className="text-2xl font-bold">內容管理儀表板</h1>
         <p className="text-gray-500 text-sm mt-1">
           這是您的內容管理儀表板
         </p>

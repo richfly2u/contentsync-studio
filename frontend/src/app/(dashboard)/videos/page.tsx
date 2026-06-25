@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
 interface Video {
@@ -17,25 +15,17 @@ interface Video {
 }
 
 export default function VideosPage() {
-  const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      fetchVideos(session.access_token);
-    });
-  }, [router]);
+    fetchVideos();
+  }, []);
 
-  const fetchVideos = async (token: string) => {
+  const fetchVideos = async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/videos`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${process.env.NEXT_PUBLIC_API_URL}/videos`
       );
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
@@ -45,11 +35,6 @@ export default function VideosPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getToken = async () => {
-    const { data } = await supabase.auth.getSession();
-    return data.session?.access_token;
   };
 
   const statusBadge = (status: string) => {

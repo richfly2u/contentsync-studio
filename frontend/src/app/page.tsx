@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Turnstile } from "@marsidev/react-turnstile";
-import { supabase } from "@/lib/supabase";
 import { useTheme } from "./theme-context";
 
 // ─── Constants ──────────────────────────────────────────────────────
@@ -91,10 +89,6 @@ export default function HomePage() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [user, setUser] = useState<any>(null);
-  // history always visible — no toggle needed
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const turnstileRef = useRef<any>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -105,7 +99,6 @@ export default function HomePage() {
 
   useEffect(() => {
     setHistory(getHistory());
-    supabase?.auth.getSession().then(({ data }) => setUser(data.session?.user || null));
   }, []);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
@@ -125,9 +118,6 @@ export default function HomePage() {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      if (!user && turnstileToken) {
-        headers["x-turnstile-token"] = turnstileToken;
-      }
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -168,7 +158,7 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [url, user, turnstileToken]);
+  }, [url]);
 
   // ─── Step 2: 後續處理（文案/音訊）──────────────────────────────
   const handleAction = useCallback(async (action: string) => {
@@ -187,7 +177,6 @@ export default function HomePage() {
     };
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (!user && turnstileToken) headers["x-turnstile-token"] = turnstileToken;
 
     try {
       const res = await fetch(actionEndpoints[action], {
@@ -205,7 +194,7 @@ export default function HomePage() {
     } finally {
       setActionLoading(null);
     }
-  }, [url, user, turnstileToken]);
+  }, [url]);
 
   const handlePaste = async () => {
     try {
@@ -224,11 +213,9 @@ export default function HomePage() {
     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
   }, []);
 
-  const isPremium = !!user;
-
   // ─── Landing page sections data ───────────────────────────────────
   const faqItems = [
-    { q: "ContentSync Studio 完全免費嗎？", a: "我們提供免費方案，每月可處理 3 次影片下載或音頻提取。文案提取、OCR 圖片辨識無限制，無需註冊即可使用。Pro 方案 $12/月，無限次數。" },
+    { q: "ContentSync Studio 完全免費嗎？", a: "目前所有功能完全免費，無需註冊即可使用。支援影片下載、音頻提取、文案提取、OCR 圖片辨識等，無使用次數限制。" },
     { q: "支援哪些影片平臺？", a: "支援 YouTube、TikTok、小紅書、Facebook、抖音、快手、B站、微博、Instagram、Twitter/X 等 50+ 平臺。" },
     { q: "文案識別的準確率如何？", a: "採用 OpenAI Whisper 語音辨識引擎，中文/英文準確率超過 95%。支援中、英、日、韓等多種語言。" },
     { q: "提取文案需要多長時間？", a: "一般 1-5 分鐘內完成，取決於影片長度。短影片（3 分鐘內）通常 30 秒內完成。" },
@@ -318,22 +305,6 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-
-            {/* Turnstile verification for non-logged-in users */}
-            {!user && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
-              <div className="flex justify-center mt-3" style={{minHeight: '0px'}}>
-                <Turnstile
-                  ref={turnstileRef}
-                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
-                  onSuccess={(token) => setTurnstileToken(token)}
-                  onExpire={() => setTurnstileToken(null)}
-                  onError={() => setTurnstileToken(null)}
-                  options={{
-                    theme: 'auto',
-                  }}
-                />
-              </div>
-            )}
 
             {/* Error */}
             {error && (

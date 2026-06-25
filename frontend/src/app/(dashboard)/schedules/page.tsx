@@ -1,8 +1,5 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
 const MONTHS = ["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
@@ -28,13 +25,6 @@ export default function SchedulesPage() {
   const [days, setDays] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { router.push("/login"); return; }
-      setToken(session.access_token);
-    });
-  }, []);
 
   useEffect(() => {
     if (!token) return;

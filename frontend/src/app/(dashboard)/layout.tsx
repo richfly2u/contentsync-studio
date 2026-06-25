@@ -1,5 +1,4 @@
 import Link from "next/link";
-import UserMenu from "@/components/UserMenu";
 
 const navItems = [
   { href: "/", label: "儀表板", icon: "📊" },
@@ -45,7 +44,6 @@ export default function DashboardLayout({
       <main className="flex-1 flex flex-col">
         <header className="h-16 border-b flex items-center px-6 bg-white">
           <h2 className="text-lg font-semibold flex-1">ContentSync Studio</h2>
-          <UserMenu />
         </header>
         <div className="flex-1 bg-gray-50">{children}</div>
       </main>
