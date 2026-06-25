@@ -108,7 +108,7 @@ export default function HomePage() {
     supabase?.auth.getSession().then(({ data }) => setUser(data.session?.user || null));
   }, []);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://link2publish.app";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
 
   const handleParse = useCallback(async (parseUrl?: string) => {
     const targetUrl = parseUrl || url;
@@ -121,7 +121,7 @@ export default function HomePage() {
     setActionError("");
 
     try {
-      const endpoint = `${apiBase}/api/v1/tools/video-download`;
+      const endpoint = `${apiBase}/api/tools/video-download`;
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
