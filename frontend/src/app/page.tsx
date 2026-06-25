@@ -426,35 +426,14 @@ export default function HomePage() {
                     <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-2">{result.title || "未命名作品"}</h3>
                   </div>
 
-                  {/* Audio Options */}
-                  {result.audioFormats?.length > 0 && (
-                    <div className="px-4 py-2">
-                      <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mb-2">🎵 音訊</div>
-                      <div className="space-y-1.5">
-                        {result.audioFormats.map((af: any, i: number) => (
-                          <a key={i} href={af.url} download
-                            className="flex items-center justify-between px-3 py-2 rounded-lg bg-white dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/30 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                            style={{borderLeft: "3px solid #ec4899"}}>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{af.quality}</span>
-                              <span className="text-[10px] text-gray-400">.mp3</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] text-gray-400">{af.size_mb}</span>
-                              <span className="text-[11px] font-bold text-pink-500 hover:text-pink-600">下載 →</span>
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Video Options */}
+                  {/* ⭐ Video Options (sorted by file size desc) */}
                   {result.videoFormats?.length > 0 && (
                     <div className="px-4 py-2">
                       <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mb-2">🎬 影片</div>
                       <div className="space-y-1.5">
-                        {result.videoFormats.map((vf: any, i: number) => {
+                        {[...result.videoFormats]
+                          .sort((a: any, b: any) => parseFloat(b.size_mb || "0") - parseFloat(a.size_mb || "0"))
+                          .map((vf: any, i: number) => {
                           const is4k = vf.quality.includes("4K") || vf.quality.includes("2160");
                           const is1080 = vf.quality.includes("1080");
                           const is720 = vf.quality.includes("720");
@@ -482,6 +461,31 @@ export default function HomePage() {
                             </a>
                           );
                         })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 🎵 Audio Options (sorted by file size desc) */}
+                  {result.audioFormats?.length > 0 && (
+                    <div className="px-4 py-2">
+                      <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mb-2">🎵 音訊</div>
+                      <div className="space-y-1.5">
+                        {[...result.audioFormats]
+                          .sort((a: any, b: any) => parseFloat(b.size_mb || "0") - parseFloat(a.size_mb || "0"))
+                          .map((af: any, i: number) => (
+                          <a key={i} href={af.url} download
+                            className="flex items-center justify-between px-3 py-2 rounded-lg bg-white dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/30 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                            style={{borderLeft: "3px solid #ec4899"}}>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{af.quality}</span>
+                              <span className="text-[10px] text-gray-400">.mp3</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-gray-400">{af.size_mb}</span>
+                              <span className="text-[11px] font-bold text-pink-500 hover:text-pink-600">下載 →</span>
+                            </div>
+                          </a>
+                        ))}
                       </div>
                     </div>
                   )}
