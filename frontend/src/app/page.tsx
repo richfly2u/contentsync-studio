@@ -361,51 +361,96 @@ export default function HomePage() {
                   </span>
                 </div>
 
+                {/* ═══ vd6s-style result card ═══ */}
                 <div className="glass-card overflow-hidden">
-                  {/* Media Preview */}
-                  <div className="bg-gray-50 dark:bg-gray-900/50">
-                    {result.video_url && (
-                      <div className="p-3">
-                        <video src={result.video_url} controls playsInline preload="metadata" className="w-full rounded-lg max-h-80" />
-                        <div className="mt-2 flex gap-1.5">
-                          <a href={result.video_url} download target="_blank"
-                            className="flex-1 text-center text-xs bg-gradient-to-r from-green-600 to-green-700 text-white py-2.5 rounded-lg hover:from-green-700 hover:to-green-800 font-bold shadow-lg shadow-green-600/30">
-                            ⬇️ 下載影片
-                          </a>
-                          <button onClick={() => navigator.clipboard.writeText(result.video_url)}
-                            className="px-3 text-xs border border-gray-200 dark:border-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">
-                            複製直連
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {result.images?.length > 0 && (
-                      <div className="p-3">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {result.images.slice(0, 9).map((img: any, i: number) => (
-                            <div key={i} className="relative group">
-                              <img src={img.url || img} alt="" className="w-full rounded-lg object-cover h-32" loading="lazy" />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                <a href={img.url || img} download target="_blank" className="text-white text-xs bg-black/50 px-2 py-1 rounded">下載</a>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  {/* Thumbnail */}
+                  {result.thumbnail && (
+                    <div className="relative">
+                      <img src={result.thumbnail} alt={result.title} className="w-full object-cover max-h-64"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      {result.duration_formatted && (
+                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[11px] px-2 py-0.5 rounded font-medium">
+                          {result.duration_formatted}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Title */}
+                  <div className="px-4 pt-3 pb-1">
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-2">{result.title || "未命名作品"}</h3>
                   </div>
 
-                  {/* Info */}
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 mb-1.5">
-                      <span className="bg-gray-50 dark:bg-gray-800/40 px-1.5 py-0.5 rounded">影片</span>
-                      {result.title && <span className="truncate">{detectPlatform(url)}</span>}
+                  {/* Audio Options */}
+                  {result.audioFormats?.length > 0 && (
+                    <div className="px-4 py-2">
+                      <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mb-2">🎵 音訊</div>
+                      <div className="space-y-1.5">
+                        {result.audioFormats.map((af: any, i: number) => (
+                          <a key={i} href={af.url} download target="_blank"
+                            className="flex items-center justify-between px-3 py-2 rounded-lg bg-white dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/30 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                            style={{borderLeft: "3px solid #ec4899"}}>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{af.quality}</span>
+                              <span className="text-[10px] text-gray-400">.mp3</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-gray-400">{af.size_mb}</span>
+                              <span className="text-[11px] font-bold text-pink-500 hover:text-pink-600">下載 →</span>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
                     </div>
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">{result.title || "未命名作品"}</h3>
-                    {result.duration_seconds && (
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400">時長：{formatDuration(result.duration_seconds)}</div>
-                    )}
-                  </div>
+                  )}
+
+                  {/* Video Options */}
+                  {result.videoFormats?.length > 0 && (
+                    <div className="px-4 py-2">
+                      <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mb-2">🎬 影片</div>
+                      <div className="space-y-1.5">
+                        {result.videoFormats.map((vf: any, i: number) => {
+                          const is4k = vf.quality.includes("4K") || vf.quality.includes("2160");
+                          const is1080 = vf.quality.includes("1080");
+                          const is720 = vf.quality.includes("720");
+                          let badge = "";
+                          if (is4k) badge = "最佳";
+                          else if (is1080) badge = "推薦";
+                          return (
+                            <a key={i} href={vf.url} download target="_blank"
+                              className="flex items-center justify-between px-3 py-2 rounded-lg bg-white dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/30 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                              style={{borderLeft: `3px solid ${is4k ? "#8b5cf6" : is1080 ? "#10b981" : "#6b7280"}`}}>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{vf.quality}</span>
+                                <span className="text-[10px] text-gray-400">.mp4</span>
+                                {badge && (
+                                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                                    is4k ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" :
+                                    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                                  }`}>{badge}</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-gray-400">{vf.size_mb}</span>
+                                <span className="text-[11px] font-bold text-blue-500 hover:text-blue-600">下載 →</span>
+                              </div>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Download Thumbnail */}
+                  {result.thumbnail && (
+                    <div className="px-4 py-2 pb-3">
+                      <a href={result.thumbnail} download target="_blank"
+                        className="inline-flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        下載封面
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── 後續處理 Action Buttons ── */}
