@@ -15,18 +15,6 @@ class AudioExtractResponse(BaseModel):
     error: Optional[str] = None
 
 
-class OCRRequest(BaseModel):
-    image_url: HttpUrl
-    language: str = "chi_sim+eng"
-
-
-class OCRResponse(BaseModel):
-    success: bool
-    text: str
-    language_detected: Optional[str] = None
-    error: Optional[str] = None
-
-
 class CaptionExtractRequest(BaseModel):
     url: HttpUrl
     language: str = "auto"

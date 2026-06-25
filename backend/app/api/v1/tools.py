@@ -12,8 +12,6 @@ from app.core.config import settings
 from app.schemas.tools import (
     AudioExtractRequest,
     AudioExtractResponse,
-    OCRRequest,
-    OCRResponse,
     CaptionExtractRequest,
     CaptionExtractResponse,
 )
@@ -28,13 +26,52 @@ TOOLS_DIR.mkdir(parents=True, exist_ok=True)
 # ─── helpers ────────────────────────────────────────────────────────
 
 
-def _download_video_sync(url: str) -> dict:
-    """Download a video using yt-dlp (blocking, runs in executor)."""
+def _parse_video_sync(url: str) -> dict:
+    """Parse video URL WITHOUT downloading — extract direct CDN links and metadata.
+    Fast — returns in 1-3 seconds instead of waiting for full download."""
     import yt_dlp
 
     task_id = str(uuid.uuid4())
     opts = {
-        "format": "best[height<=720]",  # smaller for faster processing
+        "quiet": True,
+        "no_warnings": True,
+        "no_download": True,  # no_download is the yt-dlp flag
+    }
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        # Find best available video format
+        formats = info.get("formats", [])
+        best_video = None
+        for f in formats:
+            if f.get("vcodec") and f.get("vcodec") != "none":
+                height = f.get("height", 0)
+                if best_video is None or height > best_video.get("height", 0):
+                    best_video = f
+        video_url = best_video.get("url", "") if best_video else ""
+
+        return {
+            "task_id": task_id,
+            "title": info.get("title", "影片"),
+            "duration": info.get("duration"),
+            "video_url": video_url,
+            "thumbnail": info.get("thumbnail"),
+            "ext": best_video.get("ext", "mp4") if best_video else "mp4",
+        }
+
+
+async def _parse_video(url: str) -> dict:
+    loop = asyncio.get_event_loop()
+    with concurrent.futures.ThreadPoolExecutor() as pool:
+        return await loop.run_in_executor(pool, _parse_video_sync, url)
+
+
+def _download_video_sync(url: str) -> dict:
+    """Download a video using yt-dlp (blocking) — for audio/caption processing only."""
+    import yt_dlp
+
+    task_id = str(uuid.uuid4())
+    opts = {
+        "format": "bestaudio+bestvideo[height<=360]/best[height<=360]",
         "outtmpl": str(TOOLS_DIR / f"{task_id}.%(ext)s"),
         "quiet": True,
         "no_warnings": True,
@@ -111,50 +148,6 @@ async def extract_audio_endpoint(data: AudioExtractRequest):
         )
 
 
-# ─── 2. 圖片文字提取 OCR (GPT-4o Vision) ──────────────────────────
-
-
-@router.post("/ocr", response_model=OCRResponse)
-async def ocr_endpoint(data: OCRRequest):
-    """Extract text from an image using GPT-4o vision (supports any image URL)."""
-    try:
-        response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "你是專業的文字辨識助手。請從圖片中提取所有可見的文字內容。"
-                        "如果文字是中文，保留繁體/簡體原貌。"
-                        "輸出純文字，不要 markdown 格式，不要添加任何說明。"
-                        "如果圖片中沒有文字，輸出「未偵測到文字」。"
-                    ),
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "請辨識這張圖片中的所有文字"},
-                        {"type": "image_url", "image_url": {"url": str(data.image_url)}},
-                    ],
-                },
-            ],
-            max_tokens=4096,
-            temperature=0.1,
-        )
-        text = response.choices[0].message.content or ""
-        return OCRResponse(
-            success=True,
-            text=text,
-            language_detected="auto",
-        )
-    except Exception as e:
-        return OCRResponse(
-            success=False,
-            text="",
-            error=f"OCR 辨識失敗：{str(e)}",
-        )
-
-
 # ─── 3. 一鍵文案提取 (下載+轉寫) ──────────────────────────────────
 
 
@@ -208,23 +201,20 @@ async def extract_caption_endpoint(data: CaptionExtractRequest):
         )
 
 
-# ─── 4. 影片下載（AnyToCopy 風格 — 貼連結→下載 MP4） ───────────────
+# ─── 1. 影片解析（不下載，秒回 direct URL）──────────────────────────
 
 
 @router.post("/video-download", response_model=VideoDownloadResponse)
 async def video_download_endpoint(data: VideoDownloadRequest):
-    """Download video from a social media link → return MP4 download URL."""
+    """Parse video URL and return direct CDN download link — no server-side download."""
     try:
-        video = await _download_video(str(data.url))
-        file_path = video["file_path"]
-        file_size = os.path.getsize(file_path) / (1024 * 1024)  # MB
-
-        video_url = f"/api/v1/tools/download/{Path(file_path).name}"
+        video = await _parse_video(str(data.url))
+        file_size = 0
 
         return VideoDownloadResponse(
             success=True,
             title=video["title"],
-            video_url=video_url,
+            video_url=video["video_url"],
             duration_seconds=video["duration"],
             filesize_mb=round(file_size, 1),
         )
@@ -232,7 +222,7 @@ async def video_download_endpoint(data: VideoDownloadRequest):
         return VideoDownloadResponse(
             success=False,
             title="",
-            error=f"下載失敗：{str(e)}",
+            error=f"解析失敗：{str(e)}",
         )
 
 

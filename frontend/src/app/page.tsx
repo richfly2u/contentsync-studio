@@ -7,8 +7,6 @@ import { supabase } from "@/lib/supabase";
 import { useTheme } from "./theme-context";
 
 // ─── Constants ──────────────────────────────────────────────────────
-const FREE_DOWNLOAD_LIMIT = 3;
-const STORAGE_KEY = "cs_download_count";
 const HISTORY_KEY = "cs_parse_history";
 const MAX_HISTORY = 30;
 
@@ -24,17 +22,6 @@ interface HistoryItem {
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
-function getDownloadCount(): number {
-  if (typeof window === "undefined") return 0;
-  try { return parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10); }
-  catch { return 0; }
-}
-
-function incrementDownloadCount() {
-  try { localStorage.setItem(STORAGE_KEY, String(getDownloadCount() + 1)); }
-  catch {}
-}
-
 function getHistory(): HistoryItem[] {
   if (typeof window === "undefined") return [];
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
@@ -103,10 +90,9 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
-  const [downloadCount, setDownloadCount] = useState(0);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [user, setUser] = useState<any>(null);
-  const [showHistory, setShowHistory] = useState(false);
+  // history always visible — no toggle needed
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<any>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -118,22 +104,15 @@ export default function HomePage() {
   const [actionError, setActionError] = useState("");
 
   useEffect(() => {
-    setDownloadCount(getDownloadCount());
     setHistory(getHistory());
     supabase?.auth.getSession().then(({ data }) => setUser(data.session?.user || null));
   }, []);
 
-  const remaining = FREE_DOWNLOAD_LIMIT - downloadCount;
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://link2publish.app";
 
   const handleParse = useCallback(async (parseUrl?: string) => {
     const targetUrl = parseUrl || url;
     if (!targetUrl.trim()) return;
-
-    if (!user && remaining <= 0) {
-      setError(`免費試用次數已用完（${FREE_DOWNLOAD_LIMIT} 次）。`);
-      return;
-    }
 
     setLoading(true);
     setError("");
@@ -167,11 +146,6 @@ export default function HomePage() {
       } else {
         setResult(data);
 
-        if (!user) {
-          incrementDownloadCount();
-          setDownloadCount(getDownloadCount());
-        }
-
         const platform = detectPlatform(targetUrl);
         const hitem: HistoryItem = {
           id: targetUrl,
@@ -194,9 +168,9 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [url, user, remaining, turnstileToken]);
+  }, [url, user, turnstileToken]);
 
-  // ─── Step 2: 後續處理（文案/音訊/OCR）────────────────────────────
+  // ─── Step 2: 後續處理（文案/音訊）──────────────────────────────
   const handleAction = useCallback(async (action: string) => {
     if (!url.trim()) return;
     setActionLoading(action);
@@ -206,12 +180,10 @@ export default function HomePage() {
     const actionEndpoints: Record<string, string> = {
       caption: `${apiBase}/api/v1/tools/extract-caption`,
       audio: `${apiBase}/api/v1/tools/extract-audio`,
-      ocr: `${apiBase}/api/v1/tools/ocr`,
     };
     const actionBodies: Record<string, any> = {
       caption: { url: url.trim(), language: "zh" },
       audio: { url: url.trim(), language: "zh" },
-      ocr: { image_url: url.trim(), language: "chi_sim+eng" },
     };
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -253,7 +225,6 @@ export default function HomePage() {
   }, []);
 
   const isPremium = !!user;
-  const needsUpgrade = !isPremium && remaining <= 0;
 
   // ─── Landing page sections data ───────────────────────────────────
   const faqItems = [
@@ -279,34 +250,6 @@ export default function HomePage() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            {user ? (
-              <Link href="/dashboard" className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                {user.user_metadata?.avatar_url || user.user_metadata?.picture ? (
-                  <img
-                    src={user.user_metadata?.avatar_url || user.user_metadata?.picture}
-                    alt={user.email}
-                    className="w-7 h-7 rounded-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-medium">
-                    {(user.email?.[0] || "U").toUpperCase()}
-                  </div>
-                )}
-                <span className="text-xs text-gray-600 dark:text-gray-400 max-w-[80px] truncate hidden sm:block">
-                  {user.email?.split("@")[0] || "User"}
-                </span>
-              </Link>
-            ) : (
-              <>
-                <Link href="/login" className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 px-2 py-1.5">
-                  登入
-                </Link>
-                <Link href="/register" className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors">
-                  免費註冊
-                </Link>
-              </>
-            )}
           </div>
         </div>
       </header>
@@ -354,7 +297,7 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => handleParse()}
-                  disabled={loading || !url.trim() || (needsUpgrade)}
+                  disabled={loading || !url.trim()}
                   className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl text-sm font-bold hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shrink-0 shadow-lg shadow-blue-600/30"
                 >
                   {loading ? (
@@ -362,7 +305,7 @@ export default function HomePage() {
                       <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       處理中...
                     </span>
-                  ) : needsUpgrade ? "已達上限，請註冊" : "開始解析"}
+                  ) : "開始解析"}
                 </button>
               </div>
 
@@ -372,21 +315,6 @@ export default function HomePage() {
                   {url.length > 0 ? `${url.length} / 4096` : "免費使用，無需登入"}
                 </span>
                 <div className="flex items-center gap-3">
-                  {!user && (
-                    <span className="text-amber-600 dark:text-amber-400 font-medium">
-                      {remaining > 0 ? `剩餘 ${remaining} 次下載` : "次數已用完"}
-                    </span>
-                  )}
-                  <button
-                    onClick={() => setShowHistory(!showHistory)}
-                    className={`px-2.5 py-1 rounded-md transition-colors ${
-                      showHistory
-                        ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                        : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                    }`}
-                  >
-                    最近解析 ({history.length})
-                  </button>
                 </div>
               </div>
             </div>
@@ -416,23 +344,11 @@ export default function HomePage() {
                 <div>
                   <strong className="block mb-0.5">解析未完成</strong>
                   <p>{error}</p>
-                  {error.includes("已用完") && (
-                    <Link href="/register" className="inline-block mt-1 text-blue-600 dark:text-blue-400 underline font-medium">註冊解鎖無限次下載 →</Link>
-                  )}
+
                 </div>
               </div>
             )}
 
-            {/* Needs Upgrade */}
-            {needsUpgrade && !error && (
-              <div className="max-w-2xl mx-auto mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-center">
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">免費試用次數已用完</p>
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">註冊後可無限次下載，並使用 AI 文案優化功能</p>
-                <Link href="/register" className="inline-block mt-3 bg-blue-600 text-white text-sm px-6 py-2 rounded-lg hover:bg-blue-700">
-                  免費註冊 →
-                </Link>
-              </div>
-            )}
 
             {/* ═══ STEP 02: Result + Actions ═══ */}
             {result && (
@@ -495,7 +411,7 @@ export default function HomePage() {
                 {/* ── 後續處理 Action Buttons ── */}
                 <div className="glass-card p-4">
                   <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mb-3">後續處理</div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => handleAction("caption")}
                       disabled={actionLoading !== null}
@@ -606,7 +522,7 @@ export default function HomePage() {
             )}
 
             {/* History */}
-            {showHistory && (
+            {/* History — always visible */}
               <div className="glass-card p-4 animate-fade-in">
                 <div className="flex items-center justify-between mb-3">
                   <div>
@@ -646,6 +562,23 @@ export default function HomePage() {
                     ))}
                   </div>
                 )}
+              </div>
+
+            {/* ── Ad Container ── */}
+            {result && (
+              <div id="ads-container" className="max-w-2xl mx-auto">
+                <div id="ads-slot" className="text-center">
+                  {/* 廣告程式碼放這裡 — 可放入 Google AdSense / 自有廣告 */}
+                  <div className="inline-block bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-700/20 rounded-xl py-3 px-6 text-[10px] text-gray-400 w-full">
+                    <span className="text-xs text-gray-300 dark:text-gray-600">— 廣告 —</span>
+                    <div className="mt-1">
+                      {/* 替換為你的廣告代碼 */}
+                      <div className="text-xs text-gray-400 w-full h-16 flex items-center justify-center">
+                        支援我們 — 此處放置廣告
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -769,10 +702,7 @@ export default function HomePage() {
         <section className="bg-gradient-to-r from-blue-600 to-blue-800 py-16 text-white text-center">
           <h2 className="text-3xl font-bold mb-3">準備開始使用了嗎？</h2>
           <p className="text-blue-100 mb-8">支援 50+ 平臺，免費使用，立即開始你的創作之旅</p>
-          <Link href="/register" className="inline-block bg-white text-blue-700 px-10 py-3.5 rounded-xl text-lg font-bold hover:bg-blue-50 transition-colors shadow-lg">
-            免費註冊開始使用
-          </Link>
-          <p className="text-blue-200 text-sm mt-4">或直接在輸入框中粘貼連結開始，無需註冊</p>
+          <p className="text-blue-200 text-sm">在輸入框中粘貼連結，免費使用，無需註冊</p>
         </section>
       </main>
 
