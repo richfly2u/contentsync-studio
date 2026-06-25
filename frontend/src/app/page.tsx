@@ -729,7 +729,7 @@ export default function HomePage() {
               <li><Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">文案提取</Link></li>
               <li><Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">影片轉音頻</Link></li>
               <li><Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">圖片文字辨識</Link></li>
-              <li><Link href="/register" className="hover:text-blue-600 dark:hover:text-blue-400">AI 文案優化</Link></li>
+              <li><span className="hover:text-blue-600 dark:hover:text-blue-400">AI 文案優化</span></li>
             </ul>
           </div>
           <div>
